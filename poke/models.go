@@ -30,11 +30,11 @@ var Types = map[string]Type{
 type Pokemon struct {
 	Name   string
 	Weight int
-	Type   Type
+	Types  []Type
 }
 
-type PokemonList struct {
-	Pokemons []Pokemon
+type PokemonData struct {
+	Responses []PokemonApiResponse
 }
 
 type PokemonApiResponse struct {
@@ -50,9 +50,9 @@ type PokemonApiResponse struct {
 }
 
 func (r PokemonApiResponse) ToPokemon() Pokemon {
-	var t Type
-	if len(r.Types) == 1 {
-		t = Types[r.Types[0].Type.Name]
+	var types []Type
+	for _, t := range r.Types {
+		types = append(types, Types[t.Type.Name])
 	}
-	return Pokemon{r.Name, r.Weight, t}
+	return Pokemon{r.Name, r.Weight, types}
 }
