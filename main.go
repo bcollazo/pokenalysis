@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/bcollazo/pokenalysis/poke"
 )
@@ -14,6 +15,7 @@ func main() {
 	flag.Parse()
 
 	isValid := map[string]bool{
+		"clean": true,
 		"histo": true,
 	}
 	if !isValid[command] {
@@ -21,7 +23,9 @@ func main() {
 	}
 
 	list := poke.MaybeDownloadData()
-	if command == "histo" {
+	if command == "clean" {
+		os.Remove(poke.CACHED_FILE_LOCATION)
+	} else if command == "histo" {
 		fmt.Printf("Running histo\n")
 		poke.Histo(list)
 	}
