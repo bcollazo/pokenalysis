@@ -15,3 +15,12 @@ We now present the different options / graphs.
 
 ### Type Histogram
 `poke histo` yields a histogram of the different types.
+
+### TODO:
+1. Sql CLI for Pokemon.  Full with query parser, executor, ext...
+2. Concurrently-executed (using go routines) pokemon battle simulation.
+3. Define better GoodRatio.
+4. Filtering by generation, or by any 2 numbers.  Maybe list of generations?
+5. Find best solo pokemon.
+6. Make simulation be able to run in multiple machines.  Use network to implement a PAXOS-kind of protocol
+and make distributed system self-healing.
