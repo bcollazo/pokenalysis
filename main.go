@@ -17,6 +17,7 @@ func main() {
 		"clean":      true,
 		"histo":      true,
 		"superhisto": true,
+		"goodratio":  true,
 	}
 	if !isValid[command] {
 		panic("Bad Command")
@@ -29,5 +30,7 @@ func main() {
 		poke.Histo(list)
 	} else if command == "superhisto" {
 		poke.SuperEffectiveHisto(list)
+	} else if command == "goodratio" {
+		poke.GoodRatios(list)
 	}
 }
