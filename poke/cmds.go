@@ -14,6 +14,16 @@ func buildBar(amount int) string {
 	return toReturn
 }
 
+func printHisto(histo map[Type]int) {
+	for _, t := range TypeArr {
+		bar := buildBar(histo[t])
+		fmt.Printf("%s %s (%d)\n",
+			rainbow.Bold(rainbow.Hex("#FFFFFF", t.Name+":")),
+			rainbow.Hex(t.HexColor, bar),
+			histo[t])
+	}
+}
+
 func Histo(list []Pokemon) {
 	histo := make(map[Type]int)
 	for _, p := range list {
@@ -21,10 +31,21 @@ func Histo(list []Pokemon) {
 			histo[t] += 1
 		}
 	}
-	for _, t := range Types {
-		bar := buildBar(histo[t])
-		fmt.Printf("%s %s\n",
-			rainbow.Bold(rainbow.Hex("#FFFFFF", t.Name+":")),
-			rainbow.Hex(t.HexColor, bar))
+
+	printHisto(histo)
+}
+
+func SuperEffectiveHisto(list []Pokemon) {
+	histo := make(map[Type]int)
+
+	for _, pokemon := range list {
+		for _, t := range TypeArr {
+			// Check if super-effective.  If so, add
+			if EffectiveMultiplier(t, pokemon.Types) >= 2.0 {
+				histo[t] += 1
+			}
+		}
 	}
+
+	printHisto(histo)
 }

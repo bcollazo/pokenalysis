@@ -2,6 +2,7 @@ package poke
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -35,6 +36,7 @@ func MaybeDownloadData() []Pokemon {
 	var data PokemonData
 	bytes, err := ioutil.ReadFile(CACHED_FILE_LOCATION)
 	if err != nil {
+		fmt.Println("Downloading data... (this may take a while)")
 		data = downloadData()
 
 		bytes, err = json.Marshal(data)
