@@ -12,7 +12,7 @@ import (
 const CACHED_FILE_LOCATION = "/tmp/pokemon.data"
 const POKEMON_API = "https://pokeapi.co/api/v2/pokemon/"
 const MOVE_API = "https://pokeapi.co/api/v2/move/"
-const NUM_POKEMONS = 150
+const NUM_POKEMONS = 802
 const NUM_MOVES = 639
 
 func downloadResource(baseUrl string, id int) []byte {
