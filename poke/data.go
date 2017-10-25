@@ -67,7 +67,9 @@ func MaybeDownloadData() []Pokemon {
 		movesBar.Increment()
 	}
 	movesBar.FinishPrint("Finished downloading moves.")
+}
 
+func ReadDataFromLocal() []Pokemon {
 	// Read from files into memory.
 	data := PokemonData{}
 	for i := 1; i <= NUM_POKEMONS; i++ {

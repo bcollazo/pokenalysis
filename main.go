@@ -24,7 +24,8 @@ func main() {
 		return
 	}
 
-	list := poke.MaybeDownloadData()
+	poke.MaybeDownloadData()
+	list := poke.ReadDataFromLocal()
 	if command == "histo" {
 		poke.Histo(list)
 	} else if command == "superhisto" {
