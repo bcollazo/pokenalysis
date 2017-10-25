@@ -45,7 +45,7 @@ func movePath(i int) string {
 	return filepath.Join(MOVES_DATA_DIR, strconv.Itoa(i)+".json")
 }
 
-func MaybeDownloadData() {
+func MaybeDownloadData(ids []int) {
 	fmt.Printf("Downloading data to %s\n", DATA_DIR)
 	// Ensure data directories exist.
 	_ = os.MkdirAll(DATA_DIR, 0700)
@@ -53,8 +53,8 @@ func MaybeDownloadData() {
 	_ = os.MkdirAll(MOVES_DATA_DIR, 0700)
 
 	// Download any missing pokemon.
-	pokeBar := pb.StartNew(NUM_POKEMONS)
-	for i := 1; i <= NUM_POKEMONS; i++ { // For range.
+	pokeBar := pb.StartNew(len(ids))
+	for i := range ids { // For range.
 		maybeDownloadResource(POKEMON_API, i, pokemonPath(i))
 		pokeBar.Increment()
 	}
@@ -69,10 +69,10 @@ func MaybeDownloadData() {
 	movesBar.FinishPrint("Finished downloading moves.")
 }
 
-func ReadDataFromLocal() []Pokemon {
+func ReadDataFromLocal(ids []int) []Pokemon {
 	// Read from files into memory.
 	data := PokemonData{}
-	for i := 1; i <= NUM_POKEMONS; i++ {
+	for i := range ids {
 		bytes, err := ioutil.ReadFile(pokemonPath(i))
 		apiRes := PokemonApiResponse{}
 		err = json.Unmarshal(bytes, &apiRes)
