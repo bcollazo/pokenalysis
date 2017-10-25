@@ -446,13 +446,22 @@ func EffectiveMultiplier(attType Type, pokemonTypes []Type) float64 {
 }
 
 type Pokemon struct {
-	Name   string
-	Weight int
-	Types  []Type
+	Name    string
+	Weight  int
+	Types   []Type
+	Attacks []Attack
+}
+
+type Attack struct {
+	Name     string
+	Power    int
+	Accuracy int
+	Type     Type
 }
 
 type PokemonData struct {
 	Responses []PokemonApiResponse
+	Moves     []MoveApiResponse
 }
 
 type PokemonApiResponse struct {
@@ -461,7 +470,6 @@ type PokemonApiResponse struct {
 	Types  []struct {
 		Slot int `json:slot`
 		Type struct {
-			Url  string `json:url`
 			Name string `json:name`
 		} `json:type`
 	} `json:types`
@@ -472,16 +480,55 @@ type PokemonApiResponse struct {
 		Effort   int `json:effort`
 		BaseStat int `json:"base_stat"`
 	} `json:stats`
+	Moves []struct {
+		VersionGroupDetails []struct {
+			MoveLearnMethod struct {
+				Name string `json:name`
+			} `json:"move_learn_method"`
+			LevelLearnedAt int `json:"level_learned_at"`
+			VersionGroup   struct {
+				Name string `json:"name"`
+			} `json:"version_group"`
+		} `json:"version_group_details"`
+		Move struct {
+			Name string `json:name`
+		} `json:move`
+	} `json:moves`
 	Sprites struct {
 		FrontDefault string `json:"front_default"`
 	} `json:sprites`
 	BaseExperience int `json:"base_experience"`
 }
 
-func (r PokemonApiResponse) ToPokemon() Pokemon {
+type MoveApiResponse struct {
+	Id       int    `json:id`
+	Name     string `json:name`
+	Power    int    `json:power`
+	Accuracy int    `json:accuracy`
+	Type     struct {
+		Name string `json:name`
+	} `json:type`
+}
+
+func (r MoveApiResponse) ToAttack() Attack {
+	return Attack{r.Name, r.Power, r.Accuracy, Types[r.Type.Name]}
+}
+
+func (r PokemonApiResponse) ToPokemon(movesMap map[string]Attack) Pokemon {
 	var types []Type
 	for _, t := range r.Types {
 		types = append(types, Types[t.Type.Name])
 	}
-	return Pokemon{r.Name, r.Weight, types}
+
+	var attacks []Attack
+	for _, m := range r.Moves {
+		for _, v := range m.VersionGroupDetails {
+			if v.VersionGroup.Name == "x-y" &&
+				v.MoveLearnMethod.Name == "level-up" {
+				attacks = append(attacks, movesMap[m.Move.Name])
+			}
+		}
+	}
+
+	return Pokemon{r.Name, r.Weight, types, attacks}
 }

@@ -9,14 +9,16 @@ import (
 )
 
 const CACHED_FILE_LOCATION = "/tmp/pokemon.data"
-const BASE_API_URL = "https://pokeapi.co/api/v2/pokemon/"
+const POKEMON_API = "https://pokeapi.co/api/v2/pokemon/"
+const MOVE_API = "https://pokeapi.co/api/v2/move/"
 const NUM_POKEMONS = 150
+const NUM_MOVES = 639
 
 func downloadData() PokemonData {
 	data := PokemonData{}
 	// Keep making API calls and appending to list.
 	for i := 1; i <= NUM_POKEMONS; i++ {
-		res, err := http.Get(BASE_API_URL + strconv.Itoa(i))
+		res, err := http.Get(POKEMON_API + strconv.Itoa(i))
 		Check(err)
 		bytes, err := ioutil.ReadAll(res.Body)
 		Check(err)
@@ -27,6 +29,20 @@ func downloadData() PokemonData {
 		Check(err)
 
 		data.Responses = append(data.Responses, apiRes)
+	}
+
+	for i := 1; i <= NUM_MOVES; i++ {
+		res, err := http.Get(MOVE_API + strconv.Itoa(i))
+		Check(err)
+		bytes, err := ioutil.ReadAll(res.Body)
+		Check(err)
+		res.Body.Close()
+
+		apiRes := MoveApiResponse{}
+		err = json.Unmarshal(bytes, &apiRes)
+		Check(err)
+
+		data.Moves = append(data.Moves, apiRes)
 	}
 	return data
 }
@@ -52,9 +68,14 @@ func MaybeDownloadData() []Pokemon {
 }
 
 func toPokemonsArray(data PokemonData) []Pokemon {
+	movesMap := make(map[string]Attack)
+	for _, v := range data.Moves {
+		movesMap[v.Name] = v.ToAttack()
+	}
+
 	res := make([]Pokemon, len(data.Responses))
 	for i, v := range data.Responses {
-		res[i] = v.ToPokemon()
+		res[i] = v.ToPokemon(movesMap)
 	}
 	return res
 }
