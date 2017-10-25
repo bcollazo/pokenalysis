@@ -20,7 +20,7 @@ func main() {
 	}
 
 	if command == "clean" {
-		os.Remove(poke.CACHED_FILE_LOCATION)
+		os.RemoveAll(poke.DATA_DIR)
 		return
 	}
 
