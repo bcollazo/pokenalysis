@@ -9,12 +9,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 )
 
 const POKEMON_API = "https://pokeapi.co/api/v2/pokemon/"
 const MOVE_API = "https://pokeapi.co/api/v2/move/"
 const NUM_POKEMONS = 802
 const NUM_MOVES = 639
+const NUM_WORKERS = 4
 
 var DATA_DIR = filepath.Join(os.TempDir(), "pokemon_data")
 var POKEMON_DATA_DIR = filepath.Join(DATA_DIR, "pokemons")
@@ -45,6 +47,18 @@ func movePath(i int) string {
 	return filepath.Join(MOVES_DATA_DIR, strconv.Itoa(i)+".json")
 }
 
+func divideWork(r []int, n int) [][]int {
+	step := len(r) / n
+	res := [][]int{}
+	for i := 0; i < n-1; i++ {
+		a := i * step
+		b := (i + 1) * step
+		res = append(res, r[a:b])
+	}
+	res = append(res, r[(n-1)*step:])
+	return res
+}
+
 func MaybeDownloadData(ids []int) {
 	fmt.Printf("Downloading data to %s\n", DATA_DIR)
 	// Ensure data directories exist.
@@ -53,11 +67,20 @@ func MaybeDownloadData(ids []int) {
 	_ = os.MkdirAll(MOVES_DATA_DIR, 0700)
 
 	// Download any missing pokemon.
+	var wg sync.WaitGroup
+	wg.Add(NUM_WORKERS)
 	pokeBar := pb.StartNew(len(ids))
-	for _, i := range ids { // For range.
-		maybeDownloadResource(POKEMON_API, i, pokemonPath(i))
-		pokeBar.Increment()
+	subRanges := divideWork(ids, NUM_WORKERS)
+	for _, r := range subRanges { // For range.
+		go func(r []int) {
+			for _, i := range r {
+				maybeDownloadResource(POKEMON_API, i, pokemonPath(i))
+				pokeBar.Increment()
+			}
+			wg.Done()
+		}(r)
 	}
+	wg.Wait()
 	pokeBar.FinishPrint("Finished downloading pokemons.")
 
 	// Download any missing moves.
