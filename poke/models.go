@@ -465,6 +465,17 @@ type PokemonApiResponse struct {
 			Name string `json:name`
 		} `json:type`
 	} `json:types`
+	Stats []struct {
+		Stat struct {
+			Name string `json:name`
+		} `json:stat`
+		Effort   int `json:effort`
+		BaseStat int `json:"base_stat"`
+	} `json:stats`
+	Sprites struct {
+		FrontDefault string `json:"front_default"`
+	} `json:sprites`
+	BaseExperience int `json:"base_experience"`
 }
 
 func (r PokemonApiResponse) ToPokemon() Pokemon {
