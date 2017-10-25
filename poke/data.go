@@ -15,39 +15,40 @@ const MOVE_API = "https://pokeapi.co/api/v2/move/"
 const NUM_POKEMONS = 150
 const NUM_MOVES = 639
 
+func downloadResource(baseUrl string, id int) []byte {
+	res, err := http.Get(baseUrl + strconv.Itoa(id))
+	Check(err)
+	bytes, err := ioutil.ReadAll(res.Body)
+	Check(err)
+	defer res.Body.Close()
+	return bytes
+}
+
 func downloadData() PokemonData {
 	pokeBar := pb.StartNew(NUM_POKEMONS)
 	data := PokemonData{}
 	// Keep making API calls and appending to list.
 	for i := 1; i <= NUM_POKEMONS; i++ {
-		res, err := http.Get(POKEMON_API + strconv.Itoa(i))
-		Check(err)
-		bytes, err := ioutil.ReadAll(res.Body)
-		Check(err)
-		res.Body.Close()
+		bytes := downloadResource(POKEMON_API, i)
 
 		apiRes := PokemonApiResponse{}
-		err = json.Unmarshal(bytes, &apiRes)
+		err := json.Unmarshal(bytes, &apiRes)
 		Check(err)
-
 		data.Responses = append(data.Responses, apiRes)
+
 		pokeBar.Increment()
 	}
 	pokeBar.FinishPrint("Finished downloading pokemons.")
 
 	movesBar := pb.StartNew(NUM_MOVES)
 	for i := 1; i <= NUM_MOVES; i++ {
-		res, err := http.Get(MOVE_API + strconv.Itoa(i))
-		Check(err)
-		bytes, err := ioutil.ReadAll(res.Body)
-		Check(err)
-		res.Body.Close()
+		bytes := downloadResource(MOVE_API, i)
 
 		apiRes := MoveApiResponse{}
-		err = json.Unmarshal(bytes, &apiRes)
+		err := json.Unmarshal(bytes, &apiRes)
 		Check(err)
-
 		data.Moves = append(data.Moves, apiRes)
+
 		movesBar.Increment()
 	}
 	movesBar.FinishPrint("Finished downloading moves.")
