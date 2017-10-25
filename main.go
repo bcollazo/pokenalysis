@@ -1,17 +1,13 @@
 package main
 
 import (
-	"flag"
 	"os"
 
 	"github.com/bcollazo/pokenalysis/poke"
 )
 
-var command string
-
 func main() {
-	flag.StringVar(&command, "command", "histo", "Command to compute.")
-	flag.Parse()
+	command := os.Args[1]
 
 	isValid := map[string]bool{
 		"clean":      true,
@@ -23,10 +19,13 @@ func main() {
 		panic("Bad Command")
 	}
 
-	list := poke.MaybeDownloadData()
 	if command == "clean" {
 		os.Remove(poke.CACHED_FILE_LOCATION)
-	} else if command == "histo" {
+		return
+	}
+
+	list := poke.MaybeDownloadData()
+	if command == "histo" {
 		poke.Histo(list)
 	} else if command == "superhisto" {
 		poke.SuperEffectiveHisto(list)
