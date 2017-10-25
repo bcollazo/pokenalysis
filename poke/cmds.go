@@ -7,21 +7,24 @@ import (
 	"github.com/raphamorim/go-rainbow"
 )
 
-func buildBar(amount int) string {
+const LONGEST_TYPE_NAME_LEN = 8
+
+func strRepeat(amount int, str string) string {
 	var toReturn string
 	for i := 0; i < amount; i++ {
-		toReturn += "#"
+		toReturn += str
 	}
 	return toReturn
 }
 
 func typeLabel(t Type) string {
-	return rainbow.Bold(rainbow.Hex("#FFFFFF", t.Name+":"))
+	padding := strRepeat(LONGEST_TYPE_NAME_LEN-len(t.Name), " ")
+	return rainbow.Bold(rainbow.Hex("#FFFFFF", padding+t.Name+":"))
 }
 
 func printHisto(histo map[Type]int) {
 	for _, t := range TypeArr {
-		bar := buildBar(histo[t])
+		bar := strRepeat(histo[t], "#")
 		fmt.Printf("%s %s (%d)\n",
 			typeLabel(t),
 			rainbow.Hex(t.HexColor, bar),
@@ -50,6 +53,7 @@ func Histo(list []Pokemon) {
 	printHisto(histo)
 }
 
+// Number of pokemons such type is good against.
 func SuperEffectiveHisto(list []Pokemon) {
 	histo := make(map[Type]int)
 
