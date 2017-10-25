@@ -3,6 +3,7 @@ package poke
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/cheggaaa/pb.v1"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -15,6 +16,7 @@ const NUM_POKEMONS = 150
 const NUM_MOVES = 639
 
 func downloadData() PokemonData {
+	pokeBar := pb.StartNew(NUM_POKEMONS)
 	data := PokemonData{}
 	// Keep making API calls and appending to list.
 	for i := 1; i <= NUM_POKEMONS; i++ {
@@ -29,8 +31,11 @@ func downloadData() PokemonData {
 		Check(err)
 
 		data.Responses = append(data.Responses, apiRes)
+		pokeBar.Increment()
 	}
+	pokeBar.FinishPrint("Finished downloading pokemons.")
 
+	movesBar := pb.StartNew(NUM_MOVES)
 	for i := 1; i <= NUM_MOVES; i++ {
 		res, err := http.Get(MOVE_API + strconv.Itoa(i))
 		Check(err)
@@ -43,7 +48,9 @@ func downloadData() PokemonData {
 		Check(err)
 
 		data.Moves = append(data.Moves, apiRes)
+		movesBar.Increment()
 	}
+	movesBar.FinishPrint("Finished downloading moves.")
 	return data
 }
 
