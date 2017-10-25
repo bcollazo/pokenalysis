@@ -45,7 +45,7 @@ func movePath(i int) string {
 	return filepath.Join(MOVES_DATA_DIR, strconv.Itoa(i)+".json")
 }
 
-func MaybeDownloadData() []Pokemon {
+func MaybeDownloadData() {
 	fmt.Printf("Downloading data to %s\n", DATA_DIR)
 	// Ensure data directories exist.
 	_ = os.MkdirAll(DATA_DIR, 0700)
