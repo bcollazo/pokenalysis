@@ -54,7 +54,7 @@ func MaybeDownloadData(ids []int) {
 
 	// Download any missing pokemon.
 	pokeBar := pb.StartNew(len(ids))
-	for i := range ids { // For range.
+	for _, i := range ids { // For range.
 		maybeDownloadResource(POKEMON_API, i, pokemonPath(i))
 		pokeBar.Increment()
 	}
@@ -72,7 +72,7 @@ func MaybeDownloadData(ids []int) {
 func ReadDataFromLocal(ids []int) []Pokemon {
 	// Read from files into memory.
 	data := PokemonData{}
-	for i := range ids {
+	for _, i := range ids {
 		bytes, err := ioutil.ReadFile(pokemonPath(i))
 		apiRes := PokemonApiResponse{}
 		err = json.Unmarshal(bytes, &apiRes)
@@ -90,9 +90,9 @@ func ReadDataFromLocal(ids []int) []Pokemon {
 }
 
 func toPokemonsArray(data PokemonData) []Pokemon {
-	movesMap := make(map[string]Attack)
+	movesMap := make(map[string]Move)
 	for _, v := range data.Moves {
-		movesMap[v.Name] = v.ToAttack()
+		movesMap[v.Name] = v.ToMove()
 	}
 
 	res := make([]Pokemon, len(data.Responses))

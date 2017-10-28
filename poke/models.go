@@ -437,7 +437,7 @@ func PrintEffectMap(effectMap map[string]map[string]float64) {
 	}
 }
 
-func EffectiveMultiplier(attType Type, pokemonTypes []Type) float64 {
+func TypeEffectiveness(attType Type, pokemonTypes []Type) float64 {
 	mult := 1.0
 	for _, t := range pokemonTypes {
 		mult *= EffectMap[attType.Name][t.Name]
@@ -445,18 +445,57 @@ func EffectiveMultiplier(attType Type, pokemonTypes []Type) float64 {
 	return mult
 }
 
-type Pokemon struct {
-	Name    string
-	Weight  int
-	Types   []Type
-	Attacks []Attack
+type Stats struct {
+	Hp             int
+	Attack         int
+	Defense        int
+	SpecialAttack  int
+	SpecialDefense int
+	Speed          int
 }
 
-type Attack struct {
-	Name     string
-	Power    int
-	Accuracy int
-	Type     Type
+type Pokemon struct {
+	Name           string
+	Weight         int
+	Types          []Type
+	LearnableMoves []Move
+	BaseStats      Stats
+}
+
+type BattlePokemon struct {
+	Pokemon
+	Moves [4]Move
+}
+
+func IntersectMoves(p Pokemon, moveVector []bool) [4]Move {
+	moves := [4]Move{}
+	i := 0
+	for j, b := range moveVector {
+		if b {
+			moves[i] = p.LearnableMoves[j]
+			i++
+		}
+	}
+	return moves
+}
+
+func (b BattlePokemon) ToString() string {
+	s := rainbow.Hex("#ffffff", b.Name+": [")
+	for i, m := range b.Moves {
+		if i != 0 {
+			s += ", "
+		}
+		s += rainbow.Hex(m.Type.HexColor, m.Name)
+	}
+	return s + rainbow.Hex("#ffffff", "]")
+}
+
+type Move struct {
+	Name       string
+	Power      int
+	Accuracy   int
+	Type       Type
+	isPhysical bool // else isSpecial
 }
 
 type PokemonData struct {
@@ -508,27 +547,49 @@ type MoveApiResponse struct {
 	Type     struct {
 		Name string `json:name`
 	} `json:type`
+	DamageClass struct {
+		Name string `json:name`
+	} `json:"damage_class"`
 }
 
-func (r MoveApiResponse) ToAttack() Attack {
-	return Attack{r.Name, r.Power, r.Accuracy, Types[r.Type.Name]}
+func (r MoveApiResponse) ToMove() Move {
+	isPhysical := r.DamageClass.Name == "physical"
+	return Move{r.Name, r.Power, r.Accuracy, Types[r.Type.Name], isPhysical}
 }
 
-func (r PokemonApiResponse) ToPokemon(movesMap map[string]Attack) Pokemon {
+func (r PokemonApiResponse) ToPokemon(movesMap map[string]Move) Pokemon {
 	var types []Type
 	for _, t := range r.Types {
 		types = append(types, Types[t.Type.Name])
 	}
 
-	var attacks []Attack
+	var learnable []Move
 	for _, m := range r.Moves {
 		for _, v := range m.VersionGroupDetails {
 			if v.VersionGroup.Name == "x-y" &&
 				v.MoveLearnMethod.Name == "level-up" {
-				attacks = append(attacks, movesMap[m.Move.Name])
+				learnable = append(learnable, movesMap[m.Move.Name])
 			}
 		}
 	}
 
-	return Pokemon{r.Name, r.Weight, types, attacks}
+	var baseStats Stats
+	for _, s := range r.Stats {
+		switch s.Stat.Name {
+		case "hp":
+			baseStats.Hp = s.BaseStat
+		case "attack":
+			baseStats.Attack = s.BaseStat
+		case "defense":
+			baseStats.Defense = s.BaseStat
+		case "special-attack":
+			baseStats.SpecialAttack = s.BaseStat
+		case "special-defense":
+			baseStats.SpecialDefense = s.BaseStat
+		case "speed":
+			baseStats.Speed = s.BaseStat
+		}
+	}
+
+	return Pokemon{r.Name, r.Weight, types, learnable, baseStats}
 }

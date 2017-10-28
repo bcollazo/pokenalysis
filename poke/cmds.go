@@ -60,7 +60,7 @@ func SuperEffectiveHisto(list []Pokemon) {
 	for _, pokemon := range list {
 		for _, t := range TypeArr {
 			// Check if super-effective.  If so, add
-			if EffectiveMultiplier(t, pokemon.Types) >= 2.0 {
+			if TypeEffectiveness(t, pokemon.Types) >= 2.0 {
 				histo[t] += 1
 			}
 		}
@@ -85,13 +85,13 @@ func GoodRatios(list []Pokemon) {
 		pokemonsThatKillIt := 0
 		for _, pokemon := range list {
 			// We are good against this pokemon
-			if EffectiveMultiplier(t, pokemon.Types) >= 2.0 {
+			if TypeEffectiveness(t, pokemon.Types) >= 2.0 {
 				pokemonsItKills += 1
 			}
 
 			// At least one of its type is good against us...
 			for _, tt := range pokemon.Types {
-				if EffectiveMultiplier(tt, []Type{t}) >= 2.0 {
+				if TypeEffectiveness(tt, []Type{t}) >= 2.0 {
 					pokemonsThatKillIt += 1
 					break
 				}
@@ -102,4 +102,51 @@ func GoodRatios(list []Pokemon) {
 	}
 
 	printRatios(ratios)
+}
+
+func BestPokemons(list []Pokemon) {
+	for _, p := range list {
+		version, g := bestVersion(p, list)
+		fmt.Println(version.ToString())
+	}
+}
+
+// Analyze all pokemon. Returns its ekt.
+func bestVersion(pokemon Pokemon, list []Pokemon) (best BattlePokemon, goodness float64) {
+	bestGoodness := -1.0
+
+	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4)
+	for _, moveVector := range combinations {
+		// Create battle pokemon
+		moves := IntersectMoves(pokemon, moveVector)
+		battlePoke := BattlePokemon{pokemon, moves}
+
+		// For each 150 pokemon:  Fight and get 'effective damage' of best move
+		damagePerPokemon := make(map[int]float64)
+		for i, enemy := range list {
+			_, expectedDamage := BestMove(battlePoke, enemy)
+			damagePerPokemon[i] = expectedDamage
+		}
+		// Every damage output is weighted by the health of opposing pokemon.
+		// Idea is that its important to deal high damage with high hp opponents.
+		// a.k.a. it hurts more to be weak against high hp opponents.
+		goodness := weightByHealth(damagePerPokemon, list)
+
+		// Maintain bestGoodness
+		if goodness > bestGoodness {
+			best = battlePoke
+			bestGoodness = goodness
+		}
+	}
+	return best, bestGoodness
+}
+
+func weightByHealth(damagePerPokemon map[int]float64, list []Pokemon) float64 {
+	total := 0.0
+	totalHealth := 0
+	for i, p := range list {
+		total += damagePerPokemon[i] * float64(p.BaseStats.Hp)
+		totalHealth += p.BaseStats.Hp
+	}
+	return total / float64(totalHealth)
 }
