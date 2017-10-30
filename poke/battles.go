@@ -5,49 +5,86 @@ import (
 )
 
 const LEVEL = 50.0
+const DIED_PENALTY = 100
 
-// Returns the best move to use, along with expected kill turn.
-func BestMove(a BattlePokemon, b Pokemon) (bestMove Move, ekt float64) {
-	var best Move
-	bestEkt := 10000.0
+// Analyze all pokemon. Returns its kt.
+func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
+	bestKt = 10000000000
 
-	// Check expected damage from each move.
-	for _, move := range a.Moves {
-		var A float64
-		var D float64
-		if move.isPhysical {
-			A = float64(a.BaseStats.Attack)
-			D = float64(b.BaseStats.Defense)
-		} else {
-			A = float64(a.BaseStats.SpecialAttack)
-			D = float64(b.BaseStats.SpecialDefense)
+	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4)
+	for _, moveVector := range combinations {
+		moveSet := IntersectMoves(pokemon, moveVector)
+
+		// For each 150 pokemon:  Fight and get 'effective damage' of best move
+		totalKt := 0
+		for _, enemy := range list {
+			kt := spamMoveFight(pokemon, moveSet, enemy)
+			totalKt += kt
 		}
 
-		stab := 1.0 // same-type attack bonus
-		for _, t := range a.Types {
-			if move.Type == t {
-				stab = 1.5
-			}
-		}
-		levelTerm := ((2.0 * LEVEL) / 5.0) + 2.0
-		modifier := TypeEffectiveness(move.Type, b.Types) * stab
-		damage := (((levelTerm * expectedPower(move) * A / D) / 50) + 2) * modifier
-
-		numAttacksNeeded := math.Ceil(float64(b.BaseStats.Hp) / damage)
-		var ekt float64
-		if a.BaseStats.Speed > b.BaseStats.Speed {
-			ekt = numAttacksNeeded*2 - 1
-		} else {
-			ekt = numAttacksNeeded * 2 // Since he always goes second.
-		}
-
-		if ekt < bestEkt {
-			best = move
-			bestEkt = ekt
+		// Maintain bestKt
+		if totalKt < bestKt {
+			best = moveSet
+			bestKt = totalKt
 		}
 	}
+	return best, bestKt
+}
 
-	return best, bestEkt
+// Simulates a fight where pokemons spam the best available move in every turn.
+// Returns kt (kill turn).  If enemy wins, kt = 10
+func spamMoveFight(a Pokemon, moveSet [4]Move, b Pokemon) (kt int) {
+	// Check expected damage from each move.
+	_, aDamage := bestMove(a, moveSet[:], b)
+	_, bDamage := bestMove(b, b.LearnableMoves, a) // out of all possible moves.
+
+	aKillTurn := int(math.Ceil(float64(b.BaseStats.Hp)/aDamage) * 2) // * 2 since have to wait for opponent
+	bKillTurn := int(math.Ceil(float64(a.BaseStats.Hp)/bDamage) * 2)
+	if a.BaseStats.Speed >= b.BaseStats.Speed {
+		aKillTurn -= 1
+	} else {
+		bKillTurn -= 1
+	}
+
+	if aKillTurn > bKillTurn {
+		aKillTurn += DIED_PENALTY
+	}
+	return aKillTurn
+}
+
+func bestMove(a Pokemon, moves []Move, b Pokemon) (move Move, damage float64) {
+	damage = -1.0
+	for _, m := range moves {
+		d := computeMoveDamage(a, m, b)
+
+		if d > damage {
+			move = m
+			damage = d
+		}
+	}
+	return move, damage
+}
+
+func computeMoveDamage(a Pokemon, move Move, b Pokemon) float64 {
+	var A float64
+	var D float64
+	if move.isPhysical {
+		A = float64(a.BaseStats.Attack)
+		D = float64(b.BaseStats.Defense)
+	} else {
+		A = float64(a.BaseStats.SpecialAttack)
+		D = float64(b.BaseStats.SpecialDefense)
+	}
+
+	stab := 1.0 // same-type attack bonus
+	for _, t := range a.Types {
+		if move.Type == t {
+			stab = 1.5
+		}
+	}
+	levelTerm := ((2.0 * LEVEL) / 5.0) + 2.0
+	modifier := TypeEffectiveness(move.Type, b.Types) * stab
+	return (((levelTerm * expectedPower(move) * A / D) / 50) + 2) * modifier
 }
 
 func expectedPower(move Move) float64 {

@@ -119,43 +119,21 @@ func GoodRatios(list []Pokemon, sortDir int) {
 func BestPokemons(list []Pokemon, sortDir int) {
 	fmt.Println("Analyzing optimal move sets...")
 	bar := pb.StartNew(len(list))
-	totalEkts := make(map[string]float64)
-	versions := make(map[string]BattlePokemon)
+	totalKts := make(map[int]int)
+	moveSets := make(map[int][4]Move)
+	pokemons := make(map[int]Pokemon)
 	for _, p := range list {
-		version, totalEkt := bestVersion(p, list)
-		totalEkts[version.Name] = totalEkt
-		versions[version.Name] = version
+		moveSet, totalKt := BestMoveSet(p, list)
+
+		pokemons[p.Id] = p
+		moveSets[p.Id] = moveSet
+		totalKts[p.Id] = totalKt
+
 		bar.Increment()
 	}
 
-	sortedPokemons := GetSortedPokemon(totalEkts, versions, sortDir)
+	sortedPokemons := GetSortedPokemon(pokemons, totalKts, sortDir)
 	for _, p := range sortedPokemons {
-		fmt.Println(p.ToString())
+		PrintBattlePokemon(p, moveSets[p.Id])
 	}
-}
-
-// Analyze all pokemon. Returns its ekt.
-func bestVersion(pokemon Pokemon, list []Pokemon) (best BattlePokemon, bestEkt float64) {
-	bestEkt = 10000000000.0
-
-	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4)
-	for _, moveVector := range combinations {
-		// Create battle pokemon
-		moves := IntersectMoves(pokemon, moveVector)
-		battlePoke := BattlePokemon{pokemon, moves}
-
-		// For each 150 pokemon:  Fight and get 'effective damage' of best move
-		totalEkt := 0.0
-		for _, enemy := range list {
-			_, ekt := BestMove(battlePoke, enemy)
-			totalEkt += ekt
-		}
-
-		// Maintain bestEkt
-		if totalEkt < bestEkt {
-			best = battlePoke
-			bestEkt = totalEkt
-		}
-	}
-	return best, bestEkt
 }

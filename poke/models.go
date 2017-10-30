@@ -463,11 +463,6 @@ type Pokemon struct {
 	BaseStats      Stats
 }
 
-type BattlePokemon struct {
-	Pokemon
-	Moves [4]Move
-}
-
 func IntersectMoves(p Pokemon, moveVector []bool) [4]Move {
 	moves := [4]Move{}
 	i := 0
@@ -480,15 +475,15 @@ func IntersectMoves(p Pokemon, moveVector []bool) [4]Move {
 	return moves
 }
 
-func (b BattlePokemon) ToString() string {
-	s := rainbow.Hex("#ffffff", b.Name+": [")
-	for i, m := range b.Moves {
+func PrintBattlePokemon(a Pokemon, moveSet [4]Move) {
+	s := rainbow.Hex("#ffffff", a.Name+": [")
+	for i, m := range moveSet {
 		if i != 0 {
 			s += ", "
 		}
 		s += rainbow.Hex(m.Type.HexColor, m.Name)
 	}
-	return s + rainbow.Hex("#ffffff", "]")
+	fmt.Println(s + rainbow.Hex("#ffffff", "]"))
 }
 
 type Move struct {
