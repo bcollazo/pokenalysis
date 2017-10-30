@@ -11,7 +11,7 @@ const DIED_PENALTY = 100
 func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 	bestKt = 10000000000
 
-	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4)
+	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4) // TODO: What if learns < 4
 	for _, moveVector := range combinations {
 		moveSet := IntersectMoves(pokemon, moveVector)
 
@@ -84,7 +84,12 @@ func computeMoveDamage(a Pokemon, move Move, b Pokemon) float64 {
 	}
 	levelTerm := ((2.0 * LEVEL) / 5.0) + 2.0
 	modifier := TypeEffectiveness(move.Type, b.Types) * stab
-	return (((levelTerm * expectedPower(move) * A / D) / 50) + 2) * modifier
+	damage := (((levelTerm * expectedPower(move) * A / D) / 50) + 2) * modifier
+
+	if damage <= 0.0 {
+		damage = 1.0
+	}
+	return damage
 }
 
 func expectedPower(move Move) float64 {

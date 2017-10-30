@@ -89,11 +89,11 @@ func GetSortedPokemon(pokemons map[int]Pokemon, totalKt map[int]int, dir int) []
 
 	if dir < 0 {
 		sort.Slice(ss, func(i, j int) bool {
-			return ss[i].Value > ss[j].Value
+			return ss[i].Value < ss[j].Value
 		})
 	} else if dir > 0 {
 		sort.Slice(ss, func(i, j int) bool {
-			return ss[i].Value < ss[j].Value
+			return ss[i].Value > ss[j].Value
 		})
 	} else { // dir == 0, normal ordering.
 		sort.Slice(ss, func(i, j int) bool {
