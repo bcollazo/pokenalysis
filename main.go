@@ -10,6 +10,7 @@ import (
 
 var command string
 var gens string
+var sort int
 
 func makeRange(a, b int) []int {
 	r := make([]int, b-a+1)
@@ -42,6 +43,7 @@ func idsFromGens(gens string) []int {
 func main() {
 	flag.StringVar(&command, "command", "histo", "command")
 	flag.StringVar(&gens, "gens", "1,2,3", "comma-separated generations to include")
+	flag.IntVar(&sort, "sort", 0, "sort direction. -1, 0, or 1")
 	flag.Parse()
 
 	isValid := map[string]bool{
@@ -64,12 +66,12 @@ func main() {
 	poke.MaybeDownloadData(ids)
 	list := poke.ReadDataFromLocal(ids)
 	if command == "histo" {
-		poke.Histo(list)
+		poke.Histo(list, sort)
 	} else if command == "superhisto" {
-		poke.SuperEffectiveHisto(list)
+		poke.SuperEffectiveHisto(list, sort)
 	} else if command == "goodratio" {
-		poke.GoodRatios(list)
+		poke.GoodRatios(list, sort)
 	} else if command == "bestpoke" {
-		poke.BestPokemons(list)
+		poke.BestPokemons(list, sort)
 	}
 }

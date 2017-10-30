@@ -2,9 +2,9 @@ package poke
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/raphamorim/go-rainbow"
+	"gopkg.in/cheggaaa/pb.v1"
+	"strconv"
 )
 
 const LONGEST_TYPE_NAME_LEN = 8
@@ -22,8 +22,17 @@ func typeLabel(t Type) string {
 	return rainbow.Bold(rainbow.Hex("#FFFFFF", padding+t.Name+":"))
 }
 
-func printHisto(histo map[Type]int) {
+// Ensure all types have a 0 entry.
+func emptyHisto() map[Type]int {
+	histo := make(map[Type]int)
 	for _, t := range TypeArr {
+		histo[t] = 0
+	}
+	return histo
+}
+
+func printHisto(histo map[Type]int, sorted [18]Type) {
+	for _, t := range sorted {
 		bar := strRepeat(histo[t], "#")
 		fmt.Printf("%s %s (%d)\n",
 			typeLabel(t),
@@ -32,8 +41,8 @@ func printHisto(histo map[Type]int) {
 	}
 }
 
-func printRatios(ratios map[Type][2]int) {
-	for _, t := range TypeArr {
+func printRatios(ratios map[Type][2]int, sorted [18]Type) {
+	for _, t := range sorted {
 		fmt.Printf("%s %s / %s (%f)\n",
 			typeLabel(t),
 			rainbow.Hex(t.HexColor, strconv.Itoa(ratios[t][0])),
@@ -42,20 +51,21 @@ func printRatios(ratios map[Type][2]int) {
 	}
 }
 
-func Histo(list []Pokemon) {
-	histo := make(map[Type]int)
+func Histo(list []Pokemon, sortDir int) {
+	histo := emptyHisto()
 	for _, p := range list {
 		for _, t := range p.Types {
 			histo[t] += 1
 		}
 	}
 
-	printHisto(histo)
+	sortedTypes := GetSortedIntTypes(histo, sortDir)
+	printHisto(histo, sortedTypes)
 }
 
 // Number of pokemons such type is good against.
-func SuperEffectiveHisto(list []Pokemon) {
-	histo := make(map[Type]int)
+func SuperEffectiveHisto(list []Pokemon, sortDir int) {
+	histo := emptyHisto()
 
 	for _, pokemon := range list {
 		for _, t := range TypeArr {
@@ -66,7 +76,8 @@ func SuperEffectiveHisto(list []Pokemon) {
 		}
 	}
 
-	printHisto(histo)
+	sortedTypes := GetSortedIntTypes(histo, sortDir)
+	printHisto(histo, sortedTypes)
 }
 
 // For each type, take the ratio of
@@ -78,7 +89,7 @@ func SuperEffectiveHisto(list []Pokemon) {
 // Later, maybe we can make the 'vulnerable' definition to be pokemons
 // that learn a strong (>60?) attack of a type that is super effective.
 // TODO: Take type-combinations instead (+ single types too).
-func GoodRatios(list []Pokemon) {
+func GoodRatios(list []Pokemon, sortDir int) {
 	ratios := make(map[Type][2]int)
 	for _, t := range TypeArr {
 		pokemonsItKills := 0
@@ -101,19 +112,31 @@ func GoodRatios(list []Pokemon) {
 		ratios[t] = [2]int{pokemonsItKills, pokemonsThatKillIt}
 	}
 
-	printRatios(ratios)
+	sortedTypes := GetSortedRatioTypes(ratios, sortDir)
+	printRatios(ratios, sortedTypes)
 }
 
-func BestPokemons(list []Pokemon) {
+func BestPokemons(list []Pokemon, sortDir int) {
+	fmt.Println("Analyzing optimal move sets...")
+	bar := pb.StartNew(len(list))
+	totalEkts := make(map[string]float64)
+	versions := make(map[string]BattlePokemon)
 	for _, p := range list {
-		version, g := bestVersion(p, list)
-		fmt.Println(version.ToString())
+		version, totalEkt := bestVersion(p, list)
+		totalEkts[version.Name] = totalEkt
+		versions[version.Name] = version
+		bar.Increment()
+	}
+
+	sortedPokemons := GetSortedPokemon(totalEkts, versions, sortDir)
+	for _, p := range sortedPokemons {
+		fmt.Println(p.ToString())
 	}
 }
 
 // Analyze all pokemon. Returns its ekt.
-func bestVersion(pokemon Pokemon, list []Pokemon) (best BattlePokemon, goodness float64) {
-	bestGoodness := -1.0
+func bestVersion(pokemon Pokemon, list []Pokemon) (best BattlePokemon, bestEkt float64) {
+	bestEkt = 10000000000.0
 
 	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4)
 	for _, moveVector := range combinations {
@@ -122,31 +145,17 @@ func bestVersion(pokemon Pokemon, list []Pokemon) (best BattlePokemon, goodness 
 		battlePoke := BattlePokemon{pokemon, moves}
 
 		// For each 150 pokemon:  Fight and get 'effective damage' of best move
-		damagePerPokemon := make(map[int]float64)
-		for i, enemy := range list {
-			_, expectedDamage := BestMove(battlePoke, enemy)
-			damagePerPokemon[i] = expectedDamage
+		totalEkt := 0.0
+		for _, enemy := range list {
+			_, ekt := BestMove(battlePoke, enemy)
+			totalEkt += ekt
 		}
-		// Every damage output is weighted by the health of opposing pokemon.
-		// Idea is that its important to deal high damage with high hp opponents.
-		// a.k.a. it hurts more to be weak against high hp opponents.
-		goodness := weightByHealth(damagePerPokemon, list)
 
-		// Maintain bestGoodness
-		if goodness > bestGoodness {
+		// Maintain bestEkt
+		if totalEkt < bestEkt {
 			best = battlePoke
-			bestGoodness = goodness
+			bestEkt = totalEkt
 		}
 	}
-	return best, bestGoodness
-}
-
-func weightByHealth(damagePerPokemon map[int]float64, list []Pokemon) float64 {
-	total := 0.0
-	totalHealth := 0
-	for i, p := range list {
-		total += damagePerPokemon[i] * float64(p.BaseStats.Hp)
-		totalHealth += p.BaseStats.Hp
-	}
-	return total / float64(totalHealth)
+	return best, bestEkt
 }

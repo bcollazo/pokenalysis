@@ -455,6 +455,7 @@ type Stats struct {
 }
 
 type Pokemon struct {
+	Id             int
 	Name           string
 	Weight         int
 	Types          []Type
@@ -504,6 +505,7 @@ type PokemonData struct {
 }
 
 type PokemonApiResponse struct {
+	Id     int    `json:id`
 	Name   string `json:name`
 	Weight int    `json:weight`
 	Types  []struct {
@@ -591,5 +593,5 @@ func (r PokemonApiResponse) ToPokemon(movesMap map[string]Move) Pokemon {
 		}
 	}
 
-	return Pokemon{r.Name, r.Weight, types, learnable, baseStats}
+	return Pokemon{r.Id, r.Name, r.Weight, types, learnable, baseStats}
 }
