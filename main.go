@@ -23,6 +23,10 @@ var GEN_BOUNDS = map[string][]int{
 	"1": []int{1, 151},
 	"2": []int{152, 251},
 	"3": []int{252, 386},
+	"4": []int{387, 494},
+	"5": []int{495, 649},
+	"6": []int{650, 721},
+	"7": []int{722, 802},
 }
 
 func idsFromGens(gens string) []int {
