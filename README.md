@@ -1,5 +1,8 @@
 # pokenalysis
 ![Pokenalysis Logo](https://raw.githubusercontent.com/bcollazo/pokenalysis/master/images/logo.png)
+*[Artwork by Miguel Arana](https://issuu.com/miguelarana1/docs/portfolio_updated_pages)*
+
+
 Command-line tool that computes statistics about Pokemon video game series data.
 Things computed:
 - Ocurrance of Types
