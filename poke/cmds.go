@@ -116,20 +116,33 @@ func GoodRatios(list []Pokemon, sortDir int) {
 	printRatios(ratios, sortedTypes)
 }
 
+type BestMoveSetResult struct {
+	pokemon Pokemon
+	moveSet [4]Move
+	totalKt int
+}
+
 func BestPokemons(list []Pokemon, sortDir int) {
 	fmt.Println("Analyzing optimal move sets...")
 	bar := pb.StartNew(len(list))
-	totalKts := make(map[int]int)
-	moveSets := make(map[int][4]Move)
-	pokemons := make(map[int]Pokemon)
+
+	c := make(chan BestMoveSetResult, len(list))
 	for _, p := range list {
-		moveSet, totalKt := BestMoveSet(p, list)
+		go func(p Pokemon) {
+			moveSet, totalKt := BestMoveSet(p, list)
+			bar.Increment()
+			c <- BestMoveSetResult{p, moveSet, totalKt}
+		}(p)
+	}
 
-		pokemons[p.Id] = p
-		moveSets[p.Id] = moveSet
-		totalKts[p.Id] = totalKt
-
-		bar.Increment()
+	pokemons := make(map[int]Pokemon)
+	moveSets := make(map[int][4]Move)
+	totalKts := make(map[int]int)
+	for _, _ = range list {
+		r := <-c
+		pokemons[r.pokemon.Id] = r.pokemon
+		moveSets[r.pokemon.Id] = r.moveSet
+		totalKts[r.pokemon.Id] = r.totalKt
 	}
 
 	sortedPokemons := GetSortedPokemon(pokemons, totalKts, sortDir)
