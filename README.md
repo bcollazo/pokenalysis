@@ -1,26 +1,32 @@
 # pokenalysis
-Go scripts to analyze Gen 1 Pokemon data.
-Built to learn Golang.
+![Pokenalysis Logo](https://raw.githubusercontent.com/bcollazo/pokenalysis/master/images/logo.png)
+Command-line tool that computes statistics about Pokemon video game series data.
+Things computed:
+- Ocurrance of Types
+- How many pokemon is a Type super-effective against?
+- Ratio of pokemons a Type is good against vs bad against.
+- Best Move Set for any given pokemon.
+
+All these statistics can be computed on any combination of pokemon generations and
+results can be sorted in any direction.
+
+I built this project to learn Go.
 
 ## Design
-We will use [PokeApi's](https://pokeapi.co/) data.
+We use [PokeApi's](https://pokeapi.co/) data.
 
-Program will consist of several graphs / data summaries.
-These will be accessible via different options to a command line tool.
-The commands will download required data to ~/tmp if needed, subsequent executions
-will attempt to data from ~/tmp directly.
-The commands will compute data on the fly.
+The first time the tool is run, it will download the data concurrently to a temporary folder.
+Subsequent runs will read from local folder.
 
-We now present the different options / graphs.
+The commands compute data on the fly, some use as many processors as possible.
 
-### Type Histogram
-`poke histo` yields a histogram of the different types.
+## Usage
+`pokenalysis -command=<command> -gens=<gens> -sort=<sort>`
+- command: (string) one of either 'histo', 'superhisto', 'goodratio', 'bestpoke'
+- gens: (string) comma-separated list of ints from 1 - 7. e.g. 1,2,5,6
+- sort: (int) -1, 0 or 1.
 
-### TODO:
-1. Sql CLI for Pokemon.  Full with query parser, executor, ext...
-2. Concurrently-executed (using go routines) pokemon battle simulation.
-3. Define better GoodRatio.
-4. Filtering by generation, or by any 2 numbers.  Maybe list of generations?
-5. Find best solo pokemon.
-6. Make simulation be able to run in multiple machines.  Use network to implement a PAXOS-kind of protocol
-and make distributed system self-healing.
+### Future Work:
+- Sql CLI for Pokemon.  Full with query parser, executor, ext...
+- Make simulation be able to run in multiple machines.
+Use network to implement a PAXOS-kind of protocol and make distributed system self-healing.
