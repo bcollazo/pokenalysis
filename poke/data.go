@@ -84,11 +84,18 @@ func MaybeDownloadData(ids []int) {
 	pokeBar.FinishPrint("Finished downloading pokemons.")
 
 	// Download any missing moves.
+	wg.Add(NUM_WORKERS)
 	movesBar := pb.StartNew(NUM_MOVES)
-	for i := 1; i <= NUM_MOVES; i++ {
-		maybeDownloadResource(MOVE_API, i, movePath(i))
-		movesBar.Increment()
+	subRanges = divideWork(IntRange(1, NUM_MOVES), NUM_WORKERS)
+	for _, r := range subRanges {
+		go func(r []int) {
+			for _, i := range r {
+				maybeDownloadResource(MOVE_API, i, movePath(i))
+				movesBar.Increment()
+			}
+		}(r)
 	}
+	wg.Wait()
 	movesBar.FinishPrint("Finished downloading moves.")
 }
 
