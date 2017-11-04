@@ -93,6 +93,7 @@ func MaybeDownloadData(ids []int) {
 				maybeDownloadResource(MOVE_API, i, movePath(i))
 				movesBar.Increment()
 			}
+			wg.Done()
 		}(r)
 	}
 	wg.Wait()
