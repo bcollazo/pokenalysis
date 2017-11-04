@@ -445,6 +445,41 @@ func TypeEffectiveness(attType Type, defTypes []Type) float64 {
 	return mult
 }
 
+type TypeCombination struct {
+	FirstSlot  Type
+	SecondSlot Type
+}
+
+func (combi TypeCombination) toSlice() []Type {
+	s := []Type{}
+	if combi.FirstSlot.Name != "" {
+		s = append(s, combi.FirstSlot)
+	}
+	if combi.SecondSlot.Name != "" {
+		s = append(s, combi.SecondSlot)
+	}
+	return s
+}
+
+var TypeCombinations []TypeCombination
+
+func init() {
+	var combi TypeCombination
+	for i := 0; i < len(TypeArr); i++ {
+		a := TypeArr[i]
+		// Single-type combinations.
+		combi.FirstSlot = a
+		TypeCombinations = append(TypeCombinations, combi)
+
+		for j := i + 1; j < len(TypeArr); j++ {
+			b := TypeArr[j]
+			// Two-type combinations.
+			combi.SecondSlot = b
+			TypeCombinations = append(TypeCombinations, combi)
+		}
+	}
+}
+
 type Stats struct {
 	Hp             int
 	Attack         int

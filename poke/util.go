@@ -35,6 +35,11 @@ type PokemonInt struct {
 	Value int
 }
 
+type TypeCombinationInt struct {
+	Key   TypeCombination
+	Value int
+}
+
 func GetSortedIntTypes(histo map[Type]int, dir int) [18]Type {
 	if dir == 0 {
 		return TypeArr
@@ -111,6 +116,33 @@ func GetSortedPokemon(pokemons map[int]Pokemon, totalKt map[int]int, dir int) []
 	}
 
 	var res []Pokemon
+	for _, pair := range ss {
+		res = append(res, pair.Key)
+	}
+	return res
+}
+
+func GetSortedIntCombis(histo map[TypeCombination]int, dir int) []TypeCombination {
+	if dir == 0 {
+		return TypeCombinations
+	}
+
+	var ss []TypeCombinationInt
+	for k, v := range histo {
+		ss = append(ss, TypeCombinationInt{k, v})
+	}
+
+	if dir < 0 {
+		sort.Slice(ss, func(i, j int) bool {
+			return ss[i].Value > ss[j].Value
+		})
+	} else if dir > 0 {
+		sort.Slice(ss, func(i, j int) bool {
+			return ss[i].Value < ss[j].Value
+		})
+	}
+
+	var res []TypeCombination
 	for _, pair := range ss {
 		res = append(res, pair.Key)
 	}

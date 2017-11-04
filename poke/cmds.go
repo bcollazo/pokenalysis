@@ -8,6 +8,8 @@ import (
 )
 
 const LONGEST_TYPE_NAME_LEN = 8
+const WHITE = "#FFFFFF"
+const FAV_BLUE = "#42b3f4"
 
 func strRepeat(amount int, str string) string {
 	var toReturn string
@@ -18,8 +20,20 @@ func strRepeat(amount int, str string) string {
 }
 
 func typeLabel(t Type) string {
-	padding := strRepeat(LONGEST_TYPE_NAME_LEN-len(t.Name), " ")
-	return rainbow.Bold(rainbow.Hex("#FFFFFF", padding+t.Name+":"))
+	n := LONGEST_TYPE_NAME_LEN - len(t.Name)
+	txt := strRepeat(n, " ") + t.Name + ":"
+	return rainbow.Bold(rainbow.Hex(WHITE, txt))
+}
+
+func combiLabel(c TypeCombination) string {
+	n := LONGEST_TYPE_NAME_LEN*2 + 1 - len(c.FirstSlot.Name) - len(c.SecondSlot.Name)
+	var txt string
+	if c.SecondSlot.Name != "" {
+		txt = strRepeat(n, " ") + c.FirstSlot.Name + "-" + c.SecondSlot.Name + ":"
+	} else {
+		txt = strRepeat(n+1, " ") + c.FirstSlot.Name + ":"
+	}
+	return rainbow.Bold(rainbow.Hex(WHITE, txt))
 }
 
 // Ensure all types have a 0 entry.
@@ -48,6 +62,16 @@ func printRatios(ratios map[Type][2]int, sorted [18]Type) {
 			rainbow.Hex(t.HexColor, strconv.Itoa(ratios[t][0])),
 			rainbow.Hex(t.HexColor, strconv.Itoa(ratios[t][1])),
 			float64(ratios[t][0])/float64(ratios[t][1]))
+	}
+}
+
+func printCombiHisto(histo map[TypeCombination]int, sorted []TypeCombination) {
+	for _, c := range sorted {
+		bar := strRepeat(histo[c], "#")
+		fmt.Printf("%s %s (%d)\n",
+			combiLabel(c),
+			rainbow.Hex(FAV_BLUE, bar),
+			histo[c])
 	}
 }
 
@@ -116,42 +140,17 @@ func GoodRatios(list []Pokemon, sortDir int) {
 	printRatios(ratios, sortedTypes)
 }
 
-type TypeCombination struct {
-	FirstSlot  Type
-	SecondSlot Type
-}
-
-func (combi TypeCombination) toSlice() []Type {
-	s := []Type{}
-	if combi.FirstSlot.Name != "" {
-		s = append(s, combi.FirstSlot)
-	}
-	if combi.SecondSlot.Name != "" {
-		s = append(s, combi.SecondSlot)
-	}
-	return s
-}
-
 // For each combination of type, check how many pokemons in list,
 // have a type that is at least super-effective against it.
 func BestTypeComb(list []Pokemon, sortDir int) {
 	histo := make(map[TypeCombination]int)
-	var combi TypeCombination
-	for _, a := range TypeArr {
-		// Single-type combinations.
-		combi.FirstSlot = a
-		consumeToHisto(combi, list, histo)
 
-		// Two-type combinations:
-		for _, b := range TypeArr {
-			if a == b {
-				continue
-			}
-			combi.SecondSlot = b
-			consumeToHisto(combi, list, histo)
-		}
+	for _, c := range TypeCombinations {
+		consumeToHisto(c, list, histo)
 	}
-	fmt.Println(histo)
+
+	sortedCombis := GetSortedIntCombis(histo, sortDir)
+	printCombiHisto(histo, sortedCombis)
 }
 
 func consumeToHisto(combi TypeCombination, list []Pokemon, histo map[TypeCombination]int) {
