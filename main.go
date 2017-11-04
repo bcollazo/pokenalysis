@@ -12,14 +12,6 @@ var command string
 var gens string
 var sort int
 
-func makeRange(a, b int) []int {
-	r := make([]int, b-a+1)
-	for i := range r {
-		r[i] = a + i
-	}
-	return r
-}
-
 var GEN_BOUNDS = map[string][]int{
 	"1": []int{1, 151},
 	"2": []int{152, 251},
@@ -34,7 +26,7 @@ func idsFromGens(gens string) []int {
 	genKeys := strings.Split(gens, ",")
 	ids := []int{}
 	for _, k := range genKeys {
-		genIds := makeRange(GEN_BOUNDS[k][0], GEN_BOUNDS[k][1])
+		genIds := poke.IntRange(GEN_BOUNDS[k][0], GEN_BOUNDS[k][1])
 		ids = append(ids, genIds...)
 	}
 	return ids

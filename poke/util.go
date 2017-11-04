@@ -10,6 +10,15 @@ func Check(err error) {
 	}
 }
 
+// Inclusive of a and b.  Expects a <= b
+func IntRange(a, b int) []int {
+	r := make([]int, b-a+1)
+	for i := range r {
+		r[i] = a + i
+	}
+	return r
+}
+
 // ===== Sorting:
 type TypeInt struct {
 	Key   Type
