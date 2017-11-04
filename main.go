@@ -41,8 +41,8 @@ func idsFromGens(gens string) []int {
 }
 
 func main() {
-	flag.StringVar(&command, "command", "histo", "command")
-	flag.StringVar(&gens, "gens", "1,2,3", "comma-separated generations to include")
+	flag.StringVar(&command, "command", "histo", "one of either 'histo', 'superhisto', 'goodratio', 'bestpoke'")
+	flag.StringVar(&gens, "gens", "1,2,3,4,5,6,7", "comma-separated generations to include")
 	flag.IntVar(&sort, "sort", 0, "sort direction. -1, 0, or 1")
 	flag.Parse()
 
