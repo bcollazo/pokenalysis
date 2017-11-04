@@ -47,11 +47,12 @@ func main() {
 	flag.Parse()
 
 	isValid := map[string]bool{
-		"clean":      true,
-		"histo":      true,
-		"superhisto": true,
-		"goodratio":  true,
-		"bestpoke":   true,
+		"clean":         true,
+		"histo":         true,
+		"superhisto":    true,
+		"goodratio":     true,
+		"besttypecombi": true,
+		"bestpoke":      true,
 	}
 	if !isValid[command] {
 		panic("Bad Command")
@@ -71,6 +72,8 @@ func main() {
 		poke.SuperEffectiveHisto(list, sort)
 	} else if command == "goodratio" {
 		poke.GoodRatios(list, sort)
+	} else if command == "besttypecomb" {
+		poke.BestTypeComb(list, sort)
 	} else if command == "bestpoke" {
 		poke.BestPokemons(list, sort)
 	}

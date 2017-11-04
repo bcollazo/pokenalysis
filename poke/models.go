@@ -437,9 +437,9 @@ func PrintEffectMap(effectMap map[string]map[string]float64) {
 	}
 }
 
-func TypeEffectiveness(attType Type, pokemonTypes []Type) float64 {
+func TypeEffectiveness(attType Type, defTypes []Type) float64 {
 	mult := 1.0
-	for _, t := range pokemonTypes {
+	for _, t := range defTypes {
 		mult *= EffectMap[attType.Name][t.Name]
 	}
 	return mult

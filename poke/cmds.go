@@ -116,6 +116,55 @@ func GoodRatios(list []Pokemon, sortDir int) {
 	printRatios(ratios, sortedTypes)
 }
 
+type TypeCombination struct {
+	FirstSlot  Type
+	SecondSlot Type
+}
+
+func (combi TypeCombination) toSlice() []Type {
+	s := []Type{}
+	if combi.FirstSlot.Name != "" {
+		s = append(s, combi.FirstSlot)
+	}
+	if combi.SecondSlot.Name != "" {
+		s = append(s, combi.SecondSlot)
+	}
+	return s
+}
+
+// For each combination of type, check how many pokemons in list,
+// have a type that is at least super-effective against it.
+func BestTypeComb(list []Pokemon, sortDir int) {
+	histo := make(map[TypeCombination]int)
+	var combi TypeCombination
+	for _, a := range TypeArr {
+		// Single-type combinations.
+		combi.FirstSlot = a
+		consumeToHisto(combi, list, histo)
+
+		// Two-type combinations:
+		for _, b := range TypeArr {
+			if a == b {
+				continue
+			}
+			combi.SecondSlot = b
+			consumeToHisto(combi, list, histo)
+		}
+	}
+	fmt.Println(histo)
+}
+
+func consumeToHisto(combi TypeCombination, list []Pokemon, histo map[TypeCombination]int) {
+	for _, p := range list {
+		for _, t := range p.Types {
+			s := combi.toSlice()
+			if TypeEffectiveness(t, s) >= 2.0 {
+				histo[combi] += 1
+			}
+		}
+	}
+}
+
 type BestMoveSetResult struct {
 	pokemon Pokemon
 	moveSet [4]Move
