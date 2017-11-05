@@ -6,11 +6,13 @@ import (
 	"strings"
 
 	"github.com/bcollazo/pokenalysis/poke"
+	"github.com/bcollazo/pokenalysis/serve"
 )
 
 var command string
 var gens string
 var sort int
+var port int
 
 var GEN_BOUNDS = map[string][]int{
 	"1": []int{1, 151},
@@ -36,6 +38,7 @@ func main() {
 	flag.StringVar(&command, "command", "histo", "one of either 'histo', 'superhisto', 'goodratio', 'bestpoke'")
 	flag.StringVar(&gens, "gens", "1,2,3,4,5,6,7", "comma-separated generations to include")
 	flag.IntVar(&sort, "sort", 0, "sort direction. -1, 0, or 1")
+	flag.IntVar(&port, "port", 3000, "port to use if command is 'serve'")
 	flag.Parse()
 
 	isValid := map[string]bool{
@@ -45,6 +48,7 @@ func main() {
 		"goodratio":  true,
 		"typecomb":   true,
 		"bestpoke":   true,
+		"serve":      true,
 	}
 	if !isValid[command] {
 		panic("Bad Command")
@@ -68,5 +72,7 @@ func main() {
 		poke.BestTypeComb(list, sort)
 	} else if command == "bestpoke" {
 		poke.BestPokemons(list, sort)
+	} else if command == "serve" {
+		serve.Serve(list, port)
 	}
 }

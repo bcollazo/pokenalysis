@@ -170,7 +170,7 @@ type BestMoveSetResult struct {
 	totalKt int
 }
 
-func BestPokemons(list []Pokemon, sortDir int) {
+func BestPokemons(list []Pokemon, sortDir int) []BestMoveSetResult {
 	fmt.Println("Analyzing optimal move sets...")
 	bar := pb.StartNew(len(list))
 
@@ -194,7 +194,10 @@ func BestPokemons(list []Pokemon, sortDir int) {
 	}
 
 	sortedPokemons := GetSortedPokemon(pokemons, totalKts, sortDir)
+	res := []BestMoveSetResult{}
 	for _, p := range sortedPokemons {
+		res = append(res, BestMoveSetResult{p, moveSets[p.Id], totalKts[p.Id]})
 		PrintBattlePokemon(p, moveSets[p.Id])
 	}
+	return res
 }
