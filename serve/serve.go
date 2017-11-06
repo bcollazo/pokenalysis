@@ -36,6 +36,7 @@ func StartMaster(ids []int, host string, port string, machines []string) {
 		results = append(results, r)
 		poke.PrintBattlePokemon(r.PokemonName, r.MoveSet)
 	}
+	fmt.Println(srv)
 	srv.Shutdown(nil)
 }
 
