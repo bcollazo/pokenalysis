@@ -47,6 +47,7 @@ func main() {
 	flag.StringVar(&machines, "machines", "localhost:3000", "comma-separated hostnames")
 	flag.Parse()
 
+	// Validate flags.
 	isValid := map[string]bool{
 		"clean":      true,
 		"histo":      true,
@@ -61,11 +62,13 @@ func main() {
 		panic("Bad Command")
 	}
 
+	// ===== clean command
 	if command == "clean" {
 		os.RemoveAll(poke.DATA_DIR)
 		return
 	}
 
+	// ===== mater command
 	ids := idsFromGens(gens)
 	var stringPort = ":" + strconv.Itoa(port)
 	if command == "master" {
@@ -74,7 +77,7 @@ func main() {
 		return
 	}
 
-	// Commands that need data ready.
+	// ===== the rest of the commands (require data)
 	poke.MaybeDownloadData(ids)
 	list := poke.ReadDataFromLocal(ids)
 	if command == "histo" {
