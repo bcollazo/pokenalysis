@@ -1,5 +1,3 @@
-sudo apt-get update
-sudo apt-get -y upgrade
 sudo curl -O https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
 sudo tar -xvf go1.8.linux-amd64.tar.gz
 sudo mv go /usr/local
