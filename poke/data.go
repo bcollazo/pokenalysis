@@ -18,7 +18,7 @@ const NUM_POKEMONS = 802
 const NUM_MOVES = 639
 const NUM_WORKERS = 4
 
-var DATA_DIR = filepath.Join(os.TempDir(), "pokemon_data")
+var DATA_DIR = "pokemon_data"
 var POKEMON_DATA_DIR = filepath.Join(DATA_DIR, "pokemons")
 var MOVES_DATA_DIR = filepath.Join(DATA_DIR, "moves")
 
