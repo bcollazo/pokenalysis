@@ -8,6 +8,5 @@ mkdir go
 export GOPATH=$HOME/go
 export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 
-go get -u github.com/golang/dep/cmd/dep
 go get github.com/bcollazo/pokenalysis
-pokenalysis -command=serve -gens=1
+pokenalysis -command=serve
