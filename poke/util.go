@@ -30,8 +30,8 @@ type TypeFloat struct {
 	Value float64
 }
 
-type PokemonInt struct {
-	Key   Pokemon
+type IntInt struct {
+	Key   int
 	Value int
 }
 
@@ -95,10 +95,10 @@ func GetSortedRatioTypes(histo map[Type][2]int, dir int) [18]Type {
 	return res
 }
 
-func GetSortedPokemon(pokemons map[int]Pokemon, totalKt map[int]int, dir int) []Pokemon {
-	var ss []PokemonInt
-	for id, p := range pokemons {
-		ss = append(ss, PokemonInt{p, totalKt[id]})
+func GetSortedPokemonIds(totalKt map[int]int, dir int) []int {
+	var ss []IntInt
+	for id, kt := range totalKt {
+		ss = append(ss, IntInt{id, kt})
 	}
 
 	if dir < 0 {
@@ -111,11 +111,11 @@ func GetSortedPokemon(pokemons map[int]Pokemon, totalKt map[int]int, dir int) []
 		})
 	} else { // dir == 0, normal ordering.
 		sort.Slice(ss, func(i, j int) bool {
-			return ss[i].Key.Id < ss[j].Key.Id
+			return ss[i].Key < ss[j].Key
 		})
 	}
 
-	var res []Pokemon
+	var res []int
 	for _, pair := range ss {
 		res = append(res, pair.Key)
 	}

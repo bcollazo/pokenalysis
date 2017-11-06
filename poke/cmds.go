@@ -165,9 +165,10 @@ func consumeToHisto(combi TypeCombination, list []Pokemon, histo map[TypeCombina
 }
 
 type BestMoveSetResult struct {
-	pokemon Pokemon
-	moveSet [4]Move
-	totalKt int
+	PokemonId   int     `json:"id"`
+	PokemonName string  `json:"name"`
+	MoveSet     [4]Move `json:"move_set"`
+	TotalKt     int     `json:"kt"`
 }
 
 func BestPokemons(list []Pokemon, sortDir int) []BestMoveSetResult {
@@ -179,25 +180,26 @@ func BestPokemons(list []Pokemon, sortDir int) []BestMoveSetResult {
 		go func(p Pokemon) {
 			moveSet, totalKt := BestMoveSet(p, list)
 			bar.Increment()
-			c <- BestMoveSetResult{p, moveSet, totalKt}
+			c <- BestMoveSetResult{p.Id, p.Name, moveSet, totalKt}
 		}(p)
 	}
 
-	pokemons := make(map[int]Pokemon)
+	names := make(map[int]string)
 	moveSets := make(map[int][4]Move)
 	totalKts := make(map[int]int)
 	for _, _ = range list {
 		r := <-c
-		pokemons[r.pokemon.Id] = r.pokemon
-		moveSets[r.pokemon.Id] = r.moveSet
-		totalKts[r.pokemon.Id] = r.totalKt
+		names[r.PokemonId] = r.PokemonName
+		moveSets[r.PokemonId] = r.MoveSet
+		totalKts[r.PokemonId] = r.TotalKt
 	}
+	bar.FinishPrint("Finished finding best move sets.")
 
-	sortedPokemons := GetSortedPokemon(pokemons, totalKts, sortDir)
+	sortedPokemonsIds := GetSortedPokemonIds(totalKts, sortDir)
 	res := []BestMoveSetResult{}
-	for _, p := range sortedPokemons {
-		res = append(res, BestMoveSetResult{p, moveSets[p.Id], totalKts[p.Id]})
-		PrintBattlePokemon(p, moveSets[p.Id])
+	for _, pId := range sortedPokemonsIds {
+		res = append(res, BestMoveSetResult{pId, names[pId], moveSets[pId], totalKts[pId]})
+		PrintBattlePokemon(names[pId], moveSets[pId])
 	}
 	return res
 }

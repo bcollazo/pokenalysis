@@ -47,7 +47,7 @@ func movePath(i int) string {
 	return filepath.Join(MOVES_DATA_DIR, strconv.Itoa(i)+".json")
 }
 
-func divideWork(r []int, n int) [][]int {
+func DivideWork(r []int, n int) [][]int {
 	step := len(r) / n
 	res := [][]int{}
 	for i := 0; i < n-1; i++ {
@@ -70,7 +70,7 @@ func MaybeDownloadData(ids []int) {
 	var wg sync.WaitGroup
 	wg.Add(NUM_WORKERS)
 	pokeBar := pb.StartNew(len(ids))
-	subRanges := divideWork(ids, NUM_WORKERS)
+	subRanges := DivideWork(ids, NUM_WORKERS)
 	for _, r := range subRanges { // For range.
 		go func(r []int) {
 			for _, i := range r {
@@ -86,7 +86,7 @@ func MaybeDownloadData(ids []int) {
 	// Download any missing moves.
 	wg.Add(NUM_WORKERS)
 	movesBar := pb.StartNew(NUM_MOVES)
-	subRanges = divideWork(IntRange(1, NUM_MOVES), NUM_WORKERS)
+	subRanges = DivideWork(IntRange(1, NUM_MOVES), NUM_WORKERS)
 	for _, r := range subRanges {
 		go func(r []int) {
 			for _, i := range r {

@@ -7,8 +7,8 @@ import (
 )
 
 type Type struct {
-	Name     string
-	HexColor string
+	Name     string `json:"type"`
+	HexColor string `json:"hex"`
 }
 
 // Goes from PokeApi string to Type.
@@ -510,8 +510,8 @@ func IntersectMoves(p Pokemon, moveVector []bool) [4]Move {
 	return moves
 }
 
-func PrintBattlePokemon(a Pokemon, moveSet [4]Move) {
-	s := rainbow.Hex("#ffffff", a.Name+": [")
+func PrintBattlePokemon(name string, moveSet [4]Move) {
+	s := rainbow.Hex("#ffffff", name+": [")
 	for i, m := range moveSet {
 		if i != 0 {
 			s += ", "
@@ -522,11 +522,11 @@ func PrintBattlePokemon(a Pokemon, moveSet [4]Move) {
 }
 
 type Move struct {
-	Name       string
-	Power      int
-	Accuracy   int
-	Type       Type
-	isPhysical bool // else isSpecial
+	Name       string `json:"name"`
+	Power      int    `json:"power"`
+	Accuracy   int    `json:"accuracy"`
+	Type       Type   `json:"type"`
+	isPhysical bool   `json:"is_physical"` // else isSpecial
 }
 
 type PokemonData struct {
