@@ -599,9 +599,7 @@ func (r PokemonApiResponse) ToPokemon(movesMap map[string]Move) Pokemon {
 	for _, m := range r.Moves {
 		for _, v := range m.VersionGroupDetails {
 			if v.VersionGroup.Name == "x-y" &&
-				(v.MoveLearnMethod.Name == "level-up" ||
-					v.MoveLearnMethod.Name == "machine") &&
-				movesMap[m.Move.Name].Power >= 40 {
+				v.MoveLearnMethod.Name == "level-up" {
 				learnable = append(learnable, movesMap[m.Move.Name])
 			}
 		}
