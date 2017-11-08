@@ -4,6 +4,7 @@ import (
 	"math"
 )
 
+const LIFE_MULTIPLIER = 100000
 const LEVEL = 50.0
 const DIED_PENALTY = 100
 
@@ -38,8 +39,8 @@ func spamMoveFight(a Pokemon, moveSet [4]Move, b Pokemon) (kt int) {
 	_, aDamage := bestMove(a, moveSet[:], b)
 	_, bDamage := bestMove(b, b.LearnableMoves, a) // out of all possible moves.
 
-	aKillTurn := int(math.Ceil(float64(b.BaseStats.Hp)/aDamage) * 2) // * 2 since have to wait for opponent
-	bKillTurn := int(math.Ceil(float64(a.BaseStats.Hp)/bDamage) * 2)
+	aKillTurn := int(math.Ceil(float64(b.BaseStats.Hp*LIFE_MULTIPLIER)/aDamage) * 2) // * 2 since have to wait for opponent
+	bKillTurn := int(math.Ceil(float64(a.BaseStats.Hp*LIFE_MULTIPLIER)/bDamage) * 2)
 	if a.BaseStats.Speed >= b.BaseStats.Speed {
 		aKillTurn -= 1
 	} else {
