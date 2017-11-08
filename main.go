@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -81,15 +82,21 @@ func main() {
 	poke.MaybeDownloadData(ids)
 	list := poke.ReadDataFromLocal(ids)
 	if command == "histo" {
-		poke.Histo(list, sort)
+		histo, sortedTypes := poke.Histo(list, sort)
+		poke.PrintHisto(histo, sortedTypes)
 	} else if command == "superhisto" {
-		poke.SuperEffectiveHisto(list, sort)
+		histo, sortedTypes := poke.SuperEffectiveHisto(list, sort)
+		poke.PrintHisto(histo, sortedTypes)
 	} else if command == "goodratio" {
-		poke.GoodRatios(list, sort)
+		ratios, sortedTypes := poke.GoodRatios(list, sort)
+		poke.PrintRatios(ratios, sortedTypes)
 	} else if command == "typecomb" {
-		poke.BestTypeComb(list, sort)
+		histo, sortedCombis := poke.BestTypeComb(list, sort)
+		poke.PrintCombiHisto(histo, sortedCombis)
 	} else if command == "bestpoke" {
-		poke.BestPokemons(list, sort)
+		fmt.Println("Analyzing optimal move sets...")
+		results := poke.BestPokemons(list, sort)
+		poke.PrintBestPokemonResults(results)
 	} else if command == "serve" {
 		serve.StartWorker(stringPort)
 	}

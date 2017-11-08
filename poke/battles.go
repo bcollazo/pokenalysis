@@ -8,13 +8,28 @@ const LIFE_MULTIPLIER = 100000
 const LEVEL = 50.0
 const DIED_PENALTY = 100
 
+type BestMoveSetResult struct {
+	PokemonId   int     `json:"id"`
+	PokemonName string  `json:"name"`
+	MoveSet     [4]Move `json:"move_set"`
+	TotalKt     int     `json:"kt"`
+}
+
+func TypeEffectiveness(attType Type, defTypes []Type) float64 {
+	mult := 1.0
+	for _, t := range defTypes {
+		mult *= EffectMap[attType.Name][t.Name]
+	}
+	return mult
+}
+
 // Analyze all pokemon. Returns its kt.
 func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 	bestKt = 10000000000
 
 	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4) // TODO: What if learns < 4
 	for _, moveVector := range combinations {
-		moveSet := IntersectMoves(pokemon, moveVector)
+		moveSet := intersectMoves(pokemon, moveVector)
 
 		// For each 150 pokemon:  Fight and get 'effective damage' of best move
 		totalKt := 0
@@ -30,6 +45,18 @@ func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 		}
 	}
 	return best, bestKt
+}
+
+func intersectMoves(p Pokemon, moveVector []bool) [4]Move {
+	moves := [4]Move{}
+	i := 0
+	for j, b := range moveVector {
+		if b {
+			moves[i] = p.LearnableMoves[j]
+			i++
+		}
+	}
+	return moves
 }
 
 // Simulates a fight where pokemons spam the best available move in every turn.

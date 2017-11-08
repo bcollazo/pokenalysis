@@ -1,42 +1,10 @@
 package poke
 
 import (
-	"fmt"
-	"github.com/raphamorim/go-rainbow"
 	"gopkg.in/cheggaaa/pb.v1"
-	"strconv"
 )
 
-const LONGEST_TYPE_NAME_LEN = 8
-const WHITE = "#FFFFFF"
-const FAV_BLUE = "#42b3f4"
-
-func strRepeat(amount int, str string) string {
-	var toReturn string
-	for i := 0; i < amount; i++ {
-		toReturn += str
-	}
-	return toReturn
-}
-
-func typeLabel(t Type) string {
-	n := LONGEST_TYPE_NAME_LEN - len(t.Name)
-	txt := strRepeat(n, " ") + t.Name + ":"
-	return rainbow.Bold(rainbow.Hex(WHITE, txt))
-}
-
-func combiLabel(c TypeCombination) string {
-	n := LONGEST_TYPE_NAME_LEN*2 + 1 - len(c.FirstSlot.Name) - len(c.SecondSlot.Name)
-	var txt string
-	if c.SecondSlot.Name != "" {
-		txt = strRepeat(n, " ") + c.FirstSlot.Name + "-" + c.SecondSlot.Name + ":"
-	} else {
-		txt = strRepeat(n+1, " ") + c.FirstSlot.Name + ":"
-	}
-	return rainbow.Bold(rainbow.Hex(WHITE, txt))
-}
-
-// Ensure all types have a 0 entry.
+// Ensure all Types have a 0 entry.
 func emptyHisto() map[Type]int {
 	histo := make(map[Type]int)
 	for _, t := range TypeArr {
@@ -45,51 +13,21 @@ func emptyHisto() map[Type]int {
 	return histo
 }
 
-func printHisto(histo map[Type]int, sorted [18]Type) {
-	for _, t := range sorted {
-		bar := strRepeat(histo[t], "#")
-		fmt.Printf("%s %s (%d)\n",
-			typeLabel(t),
-			rainbow.Hex(t.HexColor, bar),
-			histo[t])
-	}
-}
-
-func printRatios(ratios map[Type][2]int, sorted [18]Type) {
-	for _, t := range sorted {
-		fmt.Printf("%s %s / %s (%f)\n",
-			typeLabel(t),
-			rainbow.Hex(t.HexColor, strconv.Itoa(ratios[t][0])),
-			rainbow.Hex(t.HexColor, strconv.Itoa(ratios[t][1])),
-			float64(ratios[t][0])/float64(ratios[t][1]))
-	}
-}
-
-func printCombiHisto(histo map[TypeCombination]int, sorted []TypeCombination) {
-	for _, c := range sorted {
-		bar := strRepeat(histo[c], "#")
-		fmt.Printf("%s %s (%d)\n",
-			combiLabel(c),
-			rainbow.Hex(FAV_BLUE, bar),
-			histo[c])
-	}
-}
-
-func Histo(list []Pokemon, sortDir int) {
-	histo := emptyHisto()
+func Histo(list []Pokemon, sortDir int) (histo map[Type]int, sortedTypes [18]Type) {
+	histo = emptyHisto()
 	for _, p := range list {
 		for _, t := range p.Types {
 			histo[t] += 1
 		}
 	}
 
-	sortedTypes := GetSortedIntTypes(histo, sortDir)
-	printHisto(histo, sortedTypes)
+	sortedTypes = GetSortedIntTypes(histo, sortDir)
+	return
 }
 
 // Number of pokemons such type is good against.
-func SuperEffectiveHisto(list []Pokemon, sortDir int) {
-	histo := emptyHisto()
+func SuperEffectiveHisto(list []Pokemon, sortDir int) (histo map[Type]int, sortedTypes [18]Type) {
+	histo = emptyHisto()
 
 	for _, pokemon := range list {
 		for _, t := range TypeArr {
@@ -100,8 +38,8 @@ func SuperEffectiveHisto(list []Pokemon, sortDir int) {
 		}
 	}
 
-	sortedTypes := GetSortedIntTypes(histo, sortDir)
-	printHisto(histo, sortedTypes)
+	sortedTypes = GetSortedIntTypes(histo, sortDir)
+	return
 }
 
 // For each type, take the ratio of
@@ -113,8 +51,8 @@ func SuperEffectiveHisto(list []Pokemon, sortDir int) {
 // Later, maybe we can make the 'vulnerable' definition to be pokemons
 // that learn a strong (>60?) attack of a type that is super effective.
 // TODO: Take type-combinations instead (+ single types too).
-func GoodRatios(list []Pokemon, sortDir int) {
-	ratios := make(map[Type][2]int)
+func GoodRatios(list []Pokemon, sortDir int) (ratios map[Type][2]int, sortedTypes [18]Type) {
+	ratios = make(map[Type][2]int)
 	for _, t := range TypeArr {
 		pokemonsItKills := 0
 		pokemonsThatKillIt := 0
@@ -136,21 +74,21 @@ func GoodRatios(list []Pokemon, sortDir int) {
 		ratios[t] = [2]int{pokemonsItKills, pokemonsThatKillIt}
 	}
 
-	sortedTypes := GetSortedRatioTypes(ratios, sortDir)
-	printRatios(ratios, sortedTypes)
+	sortedTypes = GetSortedRatioTypes(ratios, sortDir)
+	return
 }
 
 // For each combination of type, check how many pokemons in list,
 // have a type that is at least super-effective against it.
-func BestTypeComb(list []Pokemon, sortDir int) {
-	histo := make(map[TypeCombination]int)
+func BestTypeComb(list []Pokemon, sortDir int) (histo map[TypeCombination]int, sortedCombis []TypeCombination) {
+	histo = make(map[TypeCombination]int)
 
 	for _, c := range TypeCombinations {
 		consumeToHisto(c, list, histo)
 	}
 
-	sortedCombis := GetSortedIntCombis(histo, sortDir)
-	printCombiHisto(histo, sortedCombis)
+	sortedCombis = GetSortedIntCombis(histo, sortDir)
+	return
 }
 
 func consumeToHisto(combi TypeCombination, list []Pokemon, histo map[TypeCombination]int) {
@@ -164,15 +102,7 @@ func consumeToHisto(combi TypeCombination, list []Pokemon, histo map[TypeCombina
 	}
 }
 
-type BestMoveSetResult struct {
-	PokemonId   int     `json:"id"`
-	PokemonName string  `json:"name"`
-	MoveSet     [4]Move `json:"move_set"`
-	TotalKt     int     `json:"kt"`
-}
-
 func BestPokemons(list []Pokemon, sortDir int) []BestMoveSetResult {
-	fmt.Println("Analyzing optimal move sets...")
 	bar := pb.StartNew(len(list))
 
 	c := make(chan BestMoveSetResult, len(list))
@@ -199,7 +129,6 @@ func BestPokemons(list []Pokemon, sortDir int) []BestMoveSetResult {
 	res := []BestMoveSetResult{}
 	for _, pId := range sortedPokemonsIds {
 		res = append(res, BestMoveSetResult{pId, names[pId], moveSets[pId], totalKts[pId]})
-		PrintBattlePokemon(names[pId], moveSets[pId])
 	}
 	return res
 }

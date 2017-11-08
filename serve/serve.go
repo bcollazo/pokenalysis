@@ -29,13 +29,13 @@ func StartMaster(ids []int, host string, port string, machines []string) {
 
 	go sendWork(ids, host+port, machines)
 
-	results := []poke.BestMoveSetResult{}
 	resultsChannel = make(chan poke.BestMoveSetResult, len(ids))
+	results := []poke.BestMoveSetResult{}
 	for _, _ = range ids {
 		r := <-resultsChannel
 		results = append(results, r)
-		poke.PrintBattlePokemon(r.PokemonName, r.MoveSet)
 	}
+	poke.PrintBestPokemonResults(results)
 	fmt.Println(srv)
 	srv.Shutdown(nil)
 }
