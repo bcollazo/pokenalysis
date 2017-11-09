@@ -12,17 +12,13 @@ func countSetBits(n int) int {
 	return c
 }
 
-func createBoolVector(n int) []bool {
-	bn := int(math.Log2(float64(n))) + 1
-	b := make([]bool, bn)
+func createBoolVector(i, n int) []bool {
+	b := make([]bool, n)
 
-	i := 0
-	nn := n
-	for ; nn > 0; nn = nn >> 1 {
-		if nn & 1 == 1 {
-			b[bn-1-i] = true
-		}
-		i++
+	j := 0
+	for ; i > 0; i = i >> 1 {
+		b[n-1-j] = i & 1 == 1
+		j++
 	}
 	return b
 }
@@ -34,7 +30,7 @@ func GenerateCombinations(n, m int) [][]bool {
 	nn := int(math.Pow(2, float64(n)))
 	for i := 0; i < nn; i++ {
 		if countSetBits(i) == m {
-			boolVec := createBoolVector(i)
+			boolVec := createBoolVector(i, n)
 			all = append(all, boolVec)
 		}
 	}

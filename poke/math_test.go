@@ -2,6 +2,8 @@ package poke
 
 import "testing"
 
+const TWO_TO_THE_27 = 134217728
+
 type Case struct {
 	n   int
 	m   int
@@ -25,7 +27,7 @@ func TestGenerateCombinations(t *testing.T) {
 }
 
 func TestCreateBoolVec(t *testing.T) {
-	res := createBoolVector(2)
+	res := createBoolVector(2, 2)
 	if res[0] != true || res[1] != false {
 		t.Errorf("Wrong: createvec\n")
 	}
@@ -33,13 +35,13 @@ func TestCreateBoolVec(t *testing.T) {
 
 func BenchmarkCountSetBits(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		countSetBits(134217728)
+		countSetBits(TWO_TO_THE_27)
 	}
 }
 
 func BenchmarkCreateBoolVec(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		createBoolVector(134217728)
+		createBoolVector(TWO_TO_THE_27 - 1, 27)
 	}
 }
 

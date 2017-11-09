@@ -30,6 +30,9 @@ func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4) // TODO: What if learns < 4
 	for _, moveVector := range combinations {
 		moveSet := intersectMoves(pokemon, moveVector)
+		if thereExistStrictlyBetter(pokemon, moveSet) {
+			continue
+		}
 
 		// For each 150 pokemon:  Fight and get 'effective damage' of best move
 		totalKt := 0
@@ -45,6 +48,33 @@ func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 		}
 	}
 	return best, bestKt
+}
+
+// True if there is an attack of same PorS with higher Power*Accuracy.
+func thereExistStrictlyBetter(p Pokemon, moveSet [4]Move) bool {
+	for _, m := range p.LearnableMoves {
+		if isInMoveSet(m, moveSet) {
+			continue
+		}
+		for _, mm := range moveSet {
+			sameCategory := (m.isPhysical && mm.isPhysical) || (!m.isPhysical && !mm.isPhysical)
+			sameType := m.Type.Name == mm.Type.Name
+			otherIsBetter := expectedPower(m) > expectedPower(mm)
+			if sameCategory && sameType && otherIsBetter {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isInMoveSet(m Move, moveSet [4]Move) bool {
+	for _, mm := range moveSet {
+		if m.Name == mm.Name {
+			return true
+		}
+	}
+	return false
 }
 
 func intersectMoves(p Pokemon, moveVector []bool) [4]Move {
