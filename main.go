@@ -9,6 +9,7 @@ import (
 
 	"github.com/bcollazo/pokenalysis/poke"
 	"github.com/bcollazo/pokenalysis/serve"
+	"github.com/pkg/profile"
 )
 
 var command string
@@ -39,6 +40,7 @@ func idsFromGens(gens string) []int {
 }
 
 func main() {
+	defer profile.Start().Stop()
 	flag.StringVar(&command, "command", "histo", "one of either 'histo', 'superhisto', 'goodratio', 'bestpoke', 'work'")
 	flag.StringVar(&gens, "gens", "1", "comma-separated generations to include")
 	flag.IntVar(&sort, "sort", 0, "sort direction. -1, 0, or 1")

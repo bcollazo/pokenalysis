@@ -8,6 +8,12 @@
   version = "v0.0.2"
 
 [[projects]]
+  name = "github.com/pkg/profile"
+  packages = ["."]
+  revision = "5b67d428864e92711fcbd2f8629456121a56d91f"
+  version = "v1.2.1"
+
+[[projects]]
   name = "github.com/raphamorim/go-rainbow"
   packages = ["."]
   revision = "78a433154b4b7fadb63848413006e0dc06ff13e7"
@@ -28,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c29ebf4cce0ac9eaccdfbc3dabf5690d6790d0013f903843674c37f53452a0a3"
+  inputs-digest = "e646c7029b2ebf020867e784423269a902104c4b7e93553500ddc47832445f87"
   solver-name = "gps-cdcl"
   solver-version = 1
