@@ -6,7 +6,8 @@ import (
 	"strconv"
 )
 
-const LONGEST_TYPE_NAME_LEN = 8
+const LONGEST_POKEMON_NAME = 14
+const LONGEST_TYPE_NAME = 8
 const WHITE = "#FFFFFF"
 const FAV_BLUE = "#42b3f4"
 
@@ -19,13 +20,13 @@ func strRepeat(amount int, str string) string {
 }
 
 func typeLabel(t Type) string {
-	n := LONGEST_TYPE_NAME_LEN - len(t.Name)
+	n := LONGEST_TYPE_NAME - len(t.Name)
 	txt := strRepeat(n, " ") + t.Name + ":"
 	return rainbow.Bold(rainbow.Hex(WHITE, txt))
 }
 
 func combiLabel(c TypeCombination) string {
-	n := LONGEST_TYPE_NAME_LEN*2 + 1 - len(c.FirstSlot.Name) - len(c.SecondSlot.Name)
+	n := LONGEST_TYPE_NAME*2 + 1 - len(c.FirstSlot.Name) - len(c.SecondSlot.Name)
 	var txt string
 	if c.SecondSlot.Name != "" {
 		txt = strRepeat(n, " ") + c.FirstSlot.Name + "-" + c.SecondSlot.Name + ":"
@@ -66,14 +67,27 @@ func PrintCombiHisto(histo map[TypeCombination]int, sorted []TypeCombination) {
 }
 
 func PrintBattlePokemon(r BestMoveSetResult) {
-	s := rainbow.Hex("#ffffff", r.PokemonName+": [")
-	for i, m := range r.MoveSet {
+	paddedName := strRepeat(LONGEST_POKEMON_NAME - len(r.PokemonName), " ") + r.PokemonName
+	s := rainbow.Hex("#ffffff", paddedName+": [")
+	s += MoveSetToString(r.MoveSet)
+	fmt.Println(s + rainbow.Hex("#ffffff", "] ") + strconv.Itoa(r.TotalKt))
+}
+
+func MoveSetToString(moveSet [4]Move) string {
+	s := ""
+	for i, m := range moveSet {
 		if i != 0 {
 			s += ", "
 		}
-		s += rainbow.Hex(m.Type.HexColor, m.Name)
+		var sOrP string
+		if m.isPhysical {
+			sOrP = "P"
+		} else {
+			sOrP = "S"
+		}
+		s += rainbow.Hex(m.Type.HexColor, fmt.Sprintf("%s(%s%d|%d)", m.Name, sOrP, m.Power, m.Accuracy))
 	}
-	fmt.Println(s + rainbow.Hex("#ffffff", "]"))
+	return s
 }
 
 func PrintBestPokemonResults(results []BestMoveSetResult) {
