@@ -27,12 +27,10 @@ func TypeEffectiveness(attType Type, defTypes []Type) float64 {
 func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 	bestKt = 10000000000
 
-	combinations := GenerateCombinations(len(pokemon.LearnableMoves), 4) // TODO: What if learns < 4
+	candidates := learnableCandidates(pokemon.LearnableMoves)
+	combinations := GenerateCombinations(len(candidates), 4) // TODO: What if learns < 4
 	for _, moveVector := range combinations {
-		moveSet := intersectMoves(pokemon, moveVector)
-		if thereExistStrictlyBetter(pokemon, moveSet) {
-			continue
-		}
+		moveSet := intersectMoves(candidates, moveVector)
 
 		// For each 150 pokemon:  Fight and get 'effective damage' of best move
 		totalKt := 0
@@ -50,39 +48,36 @@ func BestMoveSet(pokemon Pokemon, list []Pokemon) (best [4]Move, bestKt int) {
 	return best, bestKt
 }
 
-// True if there is an attack of same PorS with higher Power*Accuracy.
-func thereExistStrictlyBetter(p Pokemon, moveSet [4]Move) bool {
-	for _, m := range p.LearnableMoves {
-		if isInMoveSet(m, moveSet) {
-			continue
-		}
-		for _, mm := range moveSet {
+// Skip moves where there exist a strictly better option
+func learnableCandidates(moves []Move) []Move {
+	res := []Move{}
+	for _, m := range moves {
+		thereExistBetter := false
+		for _, mm := range moves {
+			if m == mm {
+				continue
+			}
 			sameCategory := (m.isPhysical && mm.isPhysical) || (!m.isPhysical && !mm.isPhysical)
 			sameType := m.Type.Name == mm.Type.Name
-			otherIsBetter := expectedPower(m) > expectedPower(mm)
+			otherIsBetter := expectedPower(m) < expectedPower(mm)
 			if sameCategory && sameType && otherIsBetter {
-				return true
+				thereExistBetter = true
+				break
 			}
 		}
-	}
-	return false
-}
-
-func isInMoveSet(m Move, moveSet [4]Move) bool {
-	for _, mm := range moveSet {
-		if m.Name == mm.Name {
-			return true
+		if !thereExistBetter {
+			res = append(res, m)
 		}
 	}
-	return false
+	return res
 }
 
-func intersectMoves(p Pokemon, moveVector []bool) [4]Move {
+func intersectMoves(moveSpace []Move, moveVector []bool) [4]Move {
 	moves := [4]Move{}
 	i := 0
 	for j, b := range moveVector {
 		if b {
-			moves[i] = p.LearnableMoves[j]
+			moves[i] = moveSpace[j]
 			i++
 		}
 	}
