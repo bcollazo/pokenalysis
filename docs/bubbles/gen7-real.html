@@ -6,13 +6,7 @@
 </head>
 <body>
     <div class="chart-container" style="position: relative; height:90vh; width:90vw; margin: 0 auto;">
-        <canvas id="gen1" style="display:none;"></canvas>
-        <canvas id="gen2" style="display:none;"></canvas>
-        <canvas id="gen3" style="display:none;"></canvas>
-        <canvas id="gen4" style="display:none;"></canvas>
-        <canvas id="gen5" style="display:none;"></canvas>
-        <canvas id="gen6" style="display:none;"></canvas>
-        <canvas id="gen7"></canvas>
+        <canvas id="chart"></canvas>
     </div>
     <script
         type="text/javascript"
@@ -20,14 +14,13 @@
     ></script>
     <script>
         var baseUrl = 'https://raw.githubusercontent.com/bcollazo/pokenalysis/master/dist/';
-        var gens = [1, 2, 3, 4, 5, 6, 7];
-        var data = {1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}};
+        var data = {};
         var datasReceived = 0;
-        var consumeData = function(gen, name, payload) {
-            data[gen][name] = JSON.parse(payload);
+        var consumeData = function(name, payload) {
+            data[name] = JSON.parse(payload);
             datasReceived += 1;
-            if (datasReceived == 14) {
-                initCharts(data);
+            if (datasReceived == 2) {
+                initChart(data);
             }
         }
 
@@ -40,83 +33,69 @@
                 'duration': 150,
             },
             'scales': {
-                // 'xAxes': [{
-                //     'ticks': {
-                //         'max': 250,
-                //         'min': 0
-                //     }
-                // }],
-                // 'yAxes': [{
-                //     'ticks': {
-                //         'max': 400,
-                //         'min': 0
-                //     }
-                // }],
+                'xAxes': [{
+                    'ticks': {
+                        'max': 300,
+                        'min': -50,
+                    },
+                    'scaleLabel': {
+                        'display': true,
+                        'labelString': '# Pokemons type is good against',
+                    },
+                }],
+                'yAxes': [{
+                    'ticks': {
+                        'min': -50,
+                    },
+                    'scaleLabel': {
+                        'display': true,
+                        'labelString': '# Pokemons that are good against type',
+                    },
+                }],
             },
         };
-        var initCharts = function(data) {
-            for (var g in data) {
-                var dataset = [];
-                for (var i in data[g]['goodratio']) {
-                    var point = data[g]['goodratio'][i];
-                    dataset.push({
-                        'label': point['type'],
-                        'data': [{ x: point['x'], y: point['y'] }],
-                        'backgroundColor': point['color'],
-                    });
-                }
-                for (var i in data[g]['histo']) {
-                    var point = data[g]['histo'][i];
-                    for (var j in dataset) {
-                        if (dataset[j]['label'] === point['type']) {
-                            dataset[j]['data'][0]['r'] = point['value'];
-                            break;
-                        }
-                    }
-                }
-                dataset.sort(function(a, b) {
-                    if (a['label'] < b['label']) {
-                        return -1;
-                    } else if (a['label'] > b['label']) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                });
-
-                var ctx = document.getElementById('gen' + g);
-                options['title'] = {
-                    'display': true,
-                    'text': 'Type Effectiveness',
-                    'fontSize': 24,
-                };
-                var chart = new Chart(ctx, {
-                    type: 'bubble',
-                    data: { datasets: dataset },
-                    options: options,
+        var initChart = function(data) {
+            var dataset = [];
+            for (var i in data['goodratio']) {
+                var point = data['goodratio'][i];
+                dataset.push({
+                    'type': 'bubble',
+                    'label': point['type'],
+                    'data': [{ x: point['x'], y: point['y'] }],
+                    'backgroundColor': point['color'],
                 });
             }
+            for (var i in data['histo']) {
+                var point = data['histo'][i];
+                for (var j in dataset) {
+                    if (dataset[j]['label'] === point['type']) {
+                        dataset[j]['data'][0]['r'] = point['value'];
+                        break;
+                    }
+                }
+            }
 
-            // var i = 0;
-            // setInterval(function() {
-            //     $('#gen' + gens[i]).hide();
-            //     i = (i + 1) % gens.length;
-            //     $('#gen' + gens[i]).show();
-            // }, 1000);
+            var ctx = document.getElementById('chart');
+            options['title'] = {
+                'display': true,
+                'text': 'Generation 7',
+                'fontSize': 24,
+            };
+            var chart = new Chart(ctx, {
+                type: 'bubble',
+                data: { datasets: dataset },
+                options: options,
+            });
         }
 
-        for (var i in gens) {
-            (function(i) { // Make a closure for i
-                var g = gens[i];
-                var fileKey = gens.slice(0, Number(i) + 1).join('%2C') + '.json';
-                $.get(baseUrl + 'goodratio' + fileKey, function(payload1) {
-                    consumeData(g, 'goodratio', payload1);
-                });
-                $.get(baseUrl + 'histo' + fileKey, function(payload2) {
-                    consumeData(g, 'histo', payload2);
-                });
-            })(i);
-        }
+        var baseUrl = 'https://raw.githubusercontent.com/bcollazo/pokenalysis/master/dist/'
+        var genSuffix = '1%2C2%2C3%2C4%2C5%2C6%2C7.json';
+        $.get(baseUrl + 'goodratio' + genSuffix, function(payload) {
+            consumeData('goodratio', payload);
+        });
+        $.get(baseUrl + 'histo' + genSuffix, function(payload) {
+            consumeData('histo', payload);
+        });
     </script>
 </body>
 </html>
