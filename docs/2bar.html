@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pokenalysis</title>
+    <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+</head>
+<body>
+    <div class="chart-container" style="position: relative; height:90vh; width:90vw; margin: 0 auto;">
+        <canvas id="chart"></canvas>
+    </div>
+    <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"
+    ></script>
+    <script>
+        var hexToRgba = function(hex, alpha) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            var c = {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+            };
+            return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
+        }
+        var initChart = function(data) {
+            var ctx = document.getElementById('chart');
+            var options = {
+                'title': {
+                    'display': true,
+                    'text': 'What is the best Pokemon Type?',
+                    'fontSize': 24,
+                },
+                'scales': {
+                    'xAxes': [{
+                        'stacked': true,
+                        'ticks': {
+                            'max': 802,
+                            'stepSize': 802,
+                        },
+                    }],
+                    'yAxes': [{
+                        'stacked': true,
+                    }]
+                },
+                'legend': {
+                    'display': false,
+                }
+            };
+            var chart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: options,
+            });
+        };
+
+        var dataUrl = 'https://raw.githubusercontent.com/bcollazo/pokenalysis/master/dist/goodratio1%2C2%2C3%2C4%2C5%2C6%2C7.json';
+        $.get(dataUrl, function(payload) {
+            var jsonData = JSON.parse(payload);
+            var labels = [];
+            var datasets = [
+                {
+                    'label': 'Strong Against',
+                    'backgroundColor': [],
+                    'data': [],
+                },
+                {
+                    'label': 'Weak Against',
+                    'backgroundColor': [],
+                    'data': [],
+                },
+            ];
+            jsonData.sort(function(a, b) {
+                if (a.x / a.y > b.x / b.y) {
+                    return 1;
+                } else if (a.x / a.y < b.x / b.y) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+            console.log(jsonData);
+            for (var i in jsonData) {
+                var point = jsonData[i];
+
+                labels.push(point['type']);
+
+                datasets[0]['backgroundColor'].push(hexToRgba(point['color'], 1));
+                datasets[1]['backgroundColor'].push(hexToRgba(point['color'], 0.3));
+
+                datasets[0]['data'].push(point['x']);
+                datasets[1]['data'].push(-point['y']);
+            }
+
+            var data = {
+                labels: labels,
+                datasets: datasets
+            };
+            initChart(data);
+        });
+    </script>
+</body>
+</html>
