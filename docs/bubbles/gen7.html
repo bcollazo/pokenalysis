@@ -39,18 +39,18 @@
                     },
                     'scaleLabel': {
                         'display': true,
-                        'labelString': '# of pokemons type is good against',
+                        'labelString': '# of pokemons type is strong against',
                     },
                 }],
                 'yAxes': [{
                     'ticks': {
-                        'beginAtZero': true,
-                        'reverse': true,
+                        // 'beginAtZero': true,
+                        // 'reverse': true,
                         // 'min': -50,
                     },
                     'scaleLabel': {
                         'display': true,
-                        'labelString': '# of pokemons that are good against type',
+                        'labelString': '# of pokemons that are NOT strong against type',
                     },
                 }],
             },
@@ -73,7 +73,7 @@
                 dataset.push({
                     'type': 'bubble',
                     'label': point['type'],
-                    'data': [{ x: point['x'], y: point['y'], r: 15 }],
+                    'data': [{ x: point['x'], y: 802 - point['y'], r: 15 }],
                     'backgroundColor': point['color'],
                     'hitRadius': 0,
                 });
