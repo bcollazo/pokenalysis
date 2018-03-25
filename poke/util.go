@@ -20,13 +20,15 @@ func EnsureDir(path string) {
 
 type DataPoint struct {
 	Type   string `json:"type"`
+	Color  string `json:"color"`
 	Number int    `json:"value"`
 }
 
 type TwoDataPoint struct {
-	Type string `json:"type"`
-	X    int    `json:"x"`
-	Y    int    `json:"y"`
+	Type  string `json:"type"`
+	Color string `json:"color"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
 }
 
 func SaveHistoFile(histo map[Type]int, name string) {
@@ -34,7 +36,7 @@ func SaveHistoFile(histo map[Type]int, name string) {
 
 	points := []DataPoint{}
 	for t, i := range histo {
-		points = append(points, DataPoint{t.Name, i})
+		points = append(points, DataPoint{t.Name, t.HexColor, i})
 	}
 
 	outJson, err := json.Marshal(points)
@@ -48,7 +50,7 @@ func SaveRatioFile(histo map[Type][2]int, name string) {
 
 	points := []TwoDataPoint{}
 	for t, i := range histo {
-		points = append(points, TwoDataPoint{t.Name, i[0], i[1]})
+		points = append(points, TwoDataPoint{t.Name, t.HexColor, i[0], i[1]})
 	}
 
 	outJson, err := json.Marshal(points)
