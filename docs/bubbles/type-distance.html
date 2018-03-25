@@ -35,6 +35,7 @@
             'scales': {
                 'xAxes': [{
                     'ticks': {
+                        'max': 300,
                         'min': -50,
                     },
                     'scaleLabel': {
@@ -52,15 +53,33 @@
                     },
                 }],
             },
+            'elements': {
+                'line': {
+                    'tension': 0, // disables bezier curves
+                }
+            }
         };
         var initChart = function(data) {
-            var dataset = [{
-                'type': 'line',
-                'data': [[10, 11]],
-            }];
+            var dataset = [];
             for (var i in data['goodratio']) {
                 var point = data['goodratio'][i];
                 dataset.push({
+                    'type': 'line',
+                    'label': point['type'] + '-distance',
+                    'borderColor': '#222',
+                    'borderWidth': 1,
+                    'data': [{
+                        x: 802,
+                        y: 0
+                    }, {
+                        x: point['x'],
+                        y: point['y'],
+                        r: 0,
+                    }],
+                    'fill': false,
+                });
+                dataset.push({
+                    'type': 'bubble',
                     'label': point['type'],
                     'data': [{ x: point['x'], y: point['y'] }],
                     'backgroundColor': point['color'],
@@ -75,20 +94,11 @@
                     }
                 }
             }
-            dataset.sort(function(a, b) {
-                if (a['label'] < b['label']) {
-                    return -1;
-                } else if (a['label'] > b['label']) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            });
 
             var ctx = document.getElementById('chart');
             options['title'] = {
                 'display': true,
-                'text': 'Type Effectiveness',
+                'text': 'Distance to Perfect Type',
                 'fontSize': 24,
             };
             var chart = new Chart(ctx, {
