@@ -68,9 +68,9 @@ func PrintCombiHisto(histo map[TypeCombination]int, sorted []TypeCombination) {
 
 func PrintBattlePokemon(r BestMoveSetResult) {
 	paddedName := strRepeat(LONGEST_POKEMON_NAME-len(r.PokemonName), " ") + r.PokemonName
-	s := rainbow.Hex("#ffffff", paddedName+": [")
+	s := rainbow.Hex(WHITE, paddedName+": [")
 	s += MoveSetToString(r.MoveSet)
-	fmt.Println(s + rainbow.Hex("#ffffff", "] ") + strconv.Itoa(r.TotalKt))
+	fmt.Println(s + rainbow.Hex(WHITE, "] ") + strconv.Itoa(r.TotalKt))
 }
 
 func MoveSetToString(moveSet [4]Move) string {
