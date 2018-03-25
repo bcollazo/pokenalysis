@@ -1,6 +1,9 @@
 package poke
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"sort"
 )
 
@@ -8,6 +11,50 @@ func Check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Files and System
+func EnsureDir(path string) {
+	_ = os.Mkdir(path, 0700)
+}
+
+type DataPoint struct {
+	Type   string `json:"type"`
+	Number int    `json:"value"`
+}
+
+type TwoDataPoint struct {
+	Type string `json:"type"`
+	X    int    `json:"x"`
+	Y    int    `json:"y"`
+}
+
+func SaveHistoFile(histo map[Type]int, name string) {
+	EnsureDir("dist")
+
+	points := []DataPoint{}
+	for t, i := range histo {
+		points = append(points, DataPoint{t.Name, i})
+	}
+
+	outJson, err := json.Marshal(points)
+	Check(err)
+	err = ioutil.WriteFile("dist/"+name+".json", outJson, 0644)
+	Check(err)
+}
+
+func SaveRatioFile(histo map[Type][2]int, name string) {
+	EnsureDir("dist")
+
+	points := []TwoDataPoint{}
+	for t, i := range histo {
+		points = append(points, TwoDataPoint{t.Name, i[0], i[1]})
+	}
+
+	outJson, err := json.Marshal(points)
+	Check(err)
+	err = ioutil.WriteFile("dist/"+name+".json", outJson, 0644)
+	Check(err)
 }
 
 // Inclusive of a and b.  Expects a <= b

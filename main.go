@@ -18,6 +18,7 @@ var sort int
 var host string
 var port int
 var machines string
+var outFile bool
 
 var GEN_BOUNDS = map[string][]int{
 	"1": []int{1, 151},
@@ -48,6 +49,7 @@ func main() {
 	flag.StringVar(&host, "host", "localhost", "host where this code is running.  Used when command is 'master'")
 	flag.IntVar(&port, "port", 3000, "port to use if command is 'master' or 'serve'")
 	flag.StringVar(&machines, "machines", "localhost:3000", "comma-separated hostnames")
+	flag.BoolVar(&outFile, "outFile", false, "if true, will output data to dist/ folder")
 	flag.Parse()
 
 	// Validate flags.
@@ -86,12 +88,21 @@ func main() {
 	if command == "histo" {
 		histo, sortedTypes := poke.Histo(list, sort)
 		poke.PrintHisto(histo, sortedTypes)
+		if outFile {
+			poke.SaveHistoFile(histo, command+gens)
+		}
 	} else if command == "superhisto" {
 		histo, sortedTypes := poke.SuperEffectiveHisto(list, sort)
 		poke.PrintHisto(histo, sortedTypes)
+		if outFile {
+			poke.SaveHistoFile(histo, command+gens)
+		}
 	} else if command == "goodratio" {
 		ratios, sortedTypes := poke.GoodRatios(list, sort)
 		poke.PrintRatios(ratios, sortedTypes)
+		if outFile {
+			poke.SaveRatioFile(ratios, command+gens)
+		}
 	} else if command == "typecomb" {
 		histo, sortedCombis := poke.BestTypeComb(list, sort)
 		poke.PrintCombiHisto(histo, sortedCombis)
