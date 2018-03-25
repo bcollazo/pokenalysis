@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Type Chart</title>
+    <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+</head>
+<body>
+    <div class="chart-container" style="position: relative; height:90vh; width:90vw; margin: 0 auto;">
+        <canvas id="chart"></canvas>
+    </div>
+    <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"
+    ></script>
+    <script>
+        var hexToRgba = function(hex, alpha) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            var c = {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+            };
+            return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
+        }
+        var initChart = function(data) {
+            var ctx = document.getElementById('chart');
+            var options = {
+                'title': {
+                    'display': true,
+                    'text': 'Type Effectiveness',
+                    'fontSize': 24,
+                },
+                'scales': {
+                    'xAxes': [{
+                        'stacked': true,
+                        'ticks': {
+                            'max': 802,
+                            'stepSize': 802,
+                        },
+                    }],
+                    'yAxes': [{
+                        'stacked': true,
+                    }]
+                },
+                'legend': {
+                    'display': false,
+                }
+            };
+            var chart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: data,
+                options: options,
+            });
+        };
+
+        var dataUrl = 'https://raw.githubusercontent.com/bcollazo/pokenalysis/master/dist/goodratio1%2C2%2C3%2C4%2C5%2C6%2C7.json';
+        $.get(dataUrl, function(payload) {
+            var jsonData = JSON.parse(payload);
+            var labels = [];
+            var datasets = [
+                {
+                    'label': 'Effective Against',
+                    'backgroundColor': [],
+                    'data': [],
+                },
+                {
+                    'label': 'Neutral Against',
+                    'backgroundColor': [],
+                    'data': [],
+                },
+                {
+                    'label': 'Weak Against',
+                    'backgroundColor': [],
+                    'data': [],
+                },
+            ];
+            for (var i in jsonData) {
+                var point = jsonData[i];
+                console.log(point);
+                labels.push(point['type']);
+                datasets[0]['backgroundColor'].push(hexToRgba(point['color'], 1));
+                datasets[1]['backgroundColor'].push('#ddd');
+                datasets[2]['backgroundColor'].push(hexToRgba(point['color'], 0.3));
+
+                datasets[0]['data'].push(point['x']);
+                datasets[2]['data'].push(point['y']);
+                datasets[1]['data'].push(802 - point['x'] - point['y']);
+            }
+
+            var data = {
+                labels: labels,
+                datasets: datasets
+            };
+            initChart(data);
+        });
+    </script>
+</body>
+</html>
