@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Type Chart</title>
+    <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+</head>
+<body>
+    <div class="chart-container" style="position: relative; height:90vh; width:90vw; margin: 0 auto;">
+        <canvas id="gen1"></canvas>
+        <canvas id="gen2"></canvas>
+        <canvas id="gen3"></canvas>
+        <canvas id="gen4"></canvas>
+        <canvas id="gen5"></canvas>
+        <canvas id="gen6"></canvas>
+        <canvas id="gen7"></canvas>
+    </div>
+    <script
+        type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"
+    ></script>
+    <script>
+        var baseUrl = 'https://raw.githubusercontent.com/bcollazo/pokenalysis/master/dist/';
+        var gens = [1, 2, 3, 4, 5, 6, 7];
+        var data = {1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}};
+        var datasReceived = 0;
+        var consumeData = function(gen, name, payload) {
+            data[gen][name] = JSON.parse(payload);
+            datasReceived += 1;
+            if (datasReceived == 14) {
+                initCharts(data);
+            }
+        }
+
+        var datasets = {};
+        var options = {
+            'legend': {
+                'position': 'right',
+            },
+            'animation': {
+                'duration': 150,
+            },
+        };
+        var initCharts = function(data) {
+            for (var g in data) {
+                var dataset = [];
+                for (var i in data[g]['goodratio']) {
+                    var point = data[g]['goodratio'][i];
+                    dataset.push({
+                        'label': point['type'],
+                        'data': [{ x: point['x'], y: point['y'] }],
+                        'backgroundColor': point['color'],
+                    });
+                }
+                for (var i in data[g]['histo']) {
+                    var point = data[g]['histo'][i];
+                    for (var j in dataset) {
+                        if (dataset[j]['label'] === point['type']) {
+                            dataset[j]['data'][0]['r'] = point['value'];
+                            break;
+                        }
+                    }
+                }
+                dataset.sort(function(a, b) {
+                    if (a['label'] < b['label']) {
+                        return -1;
+                    } else if (a['label'] > b['label']) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                });
+
+                var ctx = document.getElementById('gen' + g);
+                options['title'] = {
+                    'display': true,
+                    'text': 'Generation ' + g,
+                    'fontSize': 24,
+                };
+                var chart = new Chart(ctx, {
+                    type: 'bubble',
+                    data: { datasets: dataset },
+                    options: options,
+                });
+            }
+        }
+
+        for (var i in gens) {
+            (function(i) { // Make a closure for i
+                var g = gens[i];
+                var fileKey = gens.slice(0, Number(i) + 1).join('%2C') + '.json';
+                $.get(baseUrl + 'goodratio' + fileKey, function(payload1) {
+                    consumeData(g, 'goodratio', payload1);
+                });
+                $.get(baseUrl + 'histo' + fileKey, function(payload2) {
+                    consumeData(g, 'histo', payload2);
+                });
+            })(i);
+        }
+    </script>
+</body>
+</html>
